@@ -1,0 +1,11 @@
+	body {background-color: DimGray;}
+	h1
+	{
+		font-size: 18pt;
+		text-shadow: 1px 1px black;
+		color: Aquamarine;
+	}
+	
+	a{color:BurlyWood;}
+	a:visited{color:DarkSalmon;}
+	hr{border-top: 3px solid DarkSlateGrey;}

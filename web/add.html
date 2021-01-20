@@ -1,0 +1,49 @@
+<html lang='en'>
+  <head>
+	<meta charset=utf-8/>
+	<link rel="stylesheet" href="style.css">
+  </head>
+  <body bg="dark">
+	#header#
+	<form action="add_source" method="get">
+	<table>
+	<tr>
+		<td><label for="name">Name </label></td>
+		<td><input id="name" name="name" required></td>
+	</tr>
+	<tr>
+		<td><label for="address">Address </label></td>
+		<td><input id="address" name="address" type="url" required></td>
+	</tr>
+	<tr>
+		<td><label for="username">Username </label></td>
+		<td><input id="username" name="username" required></td>
+	</tr>
+	<tr>
+		<td><label for="password">Password </label></td>
+		<td><input id="password" name="password" type="password" required></td>
+	</tr>
+	<tr>
+		<td><label>Sources to trigger </label></td>
+		<td>
+			<input id="self_trigger" name="self_trigger" type="checkbox">self</br>
+			<!--<input id="trigger2" name="trigger2" type="checkbox">other</br>-->
+			#sourcecheckboxes#
+		</td>
+	</tr>
+	<tr>
+		<td><label for="duration">Record duration (seconds)</label></td>
+		<td><input id="duration" name="duration" type="number"></td>
+	</tr>
+	<tr>
+		<td><label for="quota">Disk quota (mb)</label></td>
+		<td><input id="quota" name="quota" type="number"></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td><input type="submit"></td>
+	</tr>
+	</table>
+	</form>
+  </body>
+</html>
