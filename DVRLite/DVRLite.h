@@ -3,48 +3,27 @@
 
 #pragma once
 
-#include <iostream>
-#include <filesystem>
-#include <json/json.h>
-#include "oatpp/web/server/api/ApiController.hpp"
-
-using QueryParams = oatpp::web::protocol::http::QueryParams;
+#include <vector>
+#include <unordered_map>
+#include "Onvif/Onvif.h"
+#include "Source.h"
+#include "FFmpeg/FFmpeg.h"
 
 class DVRLite
 {
 public:
 
-	struct Source
-	{
-		std::string name;
-		std::string address;
-		std::string username;
-		std::string password;
-		uint16_t duration;
-		uint16_t quota;
-		std::vector<std::string> triggers;
-
-		Source(){}
-		Source(const std::string &name, const std::string &address, uint16_t duration, uint16_t quota, const std::vector<std::string> &triggers) :
-			name(name),
-			address(address),
-			duration(duration),
-			quota(quota),
-			triggers(triggers)
-		{
-		}
-		Source(const std::filesystem::path& path) { Load(path); }
-		Source(const QueryParams &queryParams);
-
-		void Save(const std::filesystem::path &path) const;
-		void Load(const std::filesystem::path &path);
-	};
-
 	DVRLite();
 
 	void AddSource(const Source &source);
-	const std::vector<Source>& GetSources() const { return sources; }
+	//const std::unordered_set<Source, Source::Hash>& GetSources() const { return sources; }
+	std::vector<Source>& GetSources() { return sources; }
+	FFmpeg *GetFFmpeg(const Source &source) { return ffmpegs[source.GetName()].get(); }
+	FFmpeg* GetFFmpeg(const std::string& source) { return ffmpegs[source].get(); }
 private:
 
 	std::vector<Source> sources;
+	std::unordered_map<std::string, std::unique_ptr<FFmpeg>> ffmpegs;
+
+	Onvif onvif;
 };

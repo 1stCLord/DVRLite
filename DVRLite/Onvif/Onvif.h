@@ -1,3 +1,5 @@
+#pragma once
+
 #include "PullPointSubscription.h"
 #include <memory>
 
@@ -6,7 +8,8 @@ class DVRLite;
 class Onvif
 {
 public:
-    Onvif(DVRLite const *dvrlite);
+    Onvif();
+    Onvif(DVRLite *dvrlite);
 
     //TODO mediacontroller needs to be able to add and remove pullpoints while it's running
 private:

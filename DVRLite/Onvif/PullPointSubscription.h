@@ -4,14 +4,14 @@
 #include <thread>
 #include <string>
 #include <memory>
-#include "DVRLite.h"
+#include "Source.h"
 
 class PullPointSubscriptionBindingProxy;
 
 class PullPointSubscription
 {
 public:
-	PullPointSubscription(const DVRLite::Source& source, std::function<void(void)> alert);
+	PullPointSubscription(Source& source, std::function<void(void)> alert);
 	~PullPointSubscription();
 	PullPointSubscription(const PullPointSubscription&) = delete;
 	PullPointSubscription(PullPointSubscription&&) = delete;
@@ -21,7 +21,7 @@ private:
 	std::atomic_bool running;
 	std::thread thread;
 
-	const DVRLite::Source source;
+	Source &source;
 	std::function<void(void)> alert;
 
 	std::string pullpoint;

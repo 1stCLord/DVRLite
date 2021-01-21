@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <chrono>
 #include <filesystem>
@@ -7,6 +9,7 @@
 struct AVStream;
 struct AVFormatContext;
 struct AVOutputFormat;
+class Source;
 
 struct StreamMap
 {
@@ -28,7 +31,7 @@ struct RecordThreadContext
 class FFmpeg
 {
 public:
-	FFmpeg(const std::string &url, bool recordAudio, bool recordVideo);
+	FFmpeg(const Source &source);
 	FFmpeg(const FFmpeg&) = delete;
 	FFmpeg(FFmpeg&&) = delete;
 	FFmpeg& operator=(const FFmpeg&) = delete;
@@ -37,9 +40,7 @@ public:
 	void Record(std::chrono::seconds duration, const std::filesystem::path &path);
 	bool IsRecording() const;
 private:
-	const std::string url;
-	const bool recordAudio;
-	const bool recordVideo;
+	const Source& source;
 
 	std::thread recordThread;
 	std::mutex endMutex;

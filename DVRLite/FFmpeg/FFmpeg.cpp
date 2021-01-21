@@ -1,4 +1,5 @@
 #include "FFmpeg.h"
+#include "Source.h"
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -6,10 +7,8 @@ extern "C" {
 }
 #define LOG(...) printf(__VA_ARGS__)
 
-FFmpeg::FFmpeg(const std::string& url, bool recordAudio, bool recordVideo) : 
-    url(url),
-    recordAudio(recordAudio),
-    recordVideo(recordVideo),
+FFmpeg::FFmpeg(const Source &source) : 
+    source(source),
     isRecording(false)
 {
 
@@ -67,7 +66,7 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
     for (uint32_t i = 0; i < context.ifmt_ctx->nb_streams; ++i)
     {
         // Create output AVStream according to input AVStream
-        if (context.ifmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && context.video_stream_map.out == NULL && recordVideo)
+        if (context.ifmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && context.video_stream_map.out == NULL && source.GetRecordVideo())
         {
             if (!MapInput(context, context.video_stream_map, context.ifmt_ctx->streams[i]))
             {
@@ -75,7 +74,7 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
             }
             context.video_stream_map.streamIndex = stream_index++;
         }
-        else if (context.ifmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && context.audio_stream_map.out == NULL && recordAudio)
+        else if (context.ifmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && context.audio_stream_map.out == NULL && source.GetRecordAudio())
         {
             if (!MapInput(context, context.audio_stream_map, context.ifmt_ctx->streams[i]))
             {
@@ -135,11 +134,11 @@ bool FFmpeg::MapInput(RecordThreadContext& context, StreamMap& streamMap, AVStre
 
 const StreamMap *FFmpeg::GetStreamMap(const RecordThreadContext &context, int stream_index) const
 {
-    if (context.ifmt_ctx->streams[stream_index] == context.video_stream_map.in && recordVideo)
+    if (context.ifmt_ctx->streams[stream_index] == context.video_stream_map.in && source.GetRecordVideo())
     {
         return &context.video_stream_map;
     }
-    else if (context.ifmt_ctx->streams[stream_index] == context.audio_stream_map.in && recordAudio)
+    else if (context.ifmt_ctx->streams[stream_index] == context.audio_stream_map.in && source.GetRecordAudio())
     {
         return &context.audio_stream_map;
     }
@@ -150,7 +149,8 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
 {
     std::string out_path = path.string();
     const char* out_filename = out_path.c_str();
-    const char* in_filename = url.c_str();
+    std::string videoAddress = source.GetVideoAddress();
+    const char* in_filename = videoAddress.c_str();
 
     RecordThreadContext context;
     if (!InitialiseRecordThread(in_filename, out_filename, context))

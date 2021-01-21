@@ -79,28 +79,29 @@ std::string MediaController::CreateSourceList() const
 {
     std::string sourcelist;
     sourcelist += "<table style=\"width: 100%;\">";
-    for (const DVRLite::Source& source : dvrlite->GetSources())
+    for (const Source& source : dvrlite->GetSources())
     {
         sourcelist += "<tr>";
-        sourcelist += "<td>" + source.name + "</td>";
-        sourcelist += "<td>" + source.address + "</td>";
-        sourcelist += "<td>" + std::to_string(source.duration) + "</td>";
-        sourcelist += "<td>" + std::to_string(source.quota) + "</td>";
+        sourcelist += "<td>" + source.GetName() + "</td>";
+        sourcelist += "<td>" + source.GetOnvifAddress() + "</td>";
+        sourcelist += "<td>" + source.GetVideoAddress() + "</td>";
+        sourcelist += "<td>" + std::to_string(source.GetDuration()) + "</td>";
+        sourcelist += "<td>" + std::to_string(source.GetQuota()) + "</td>";
         sourcelist += "<td>";
-        for (const std::string& trigger : source.triggers)
+        for (const std::string& trigger : source.GetTriggers())
             sourcelist += trigger + "</br>";
         sourcelist += "</td>";
-        sourcelist += "<td><a href=\"delete_source?source=" + source.name + "\">delete</a></td>";
+        sourcelist += "<td><a href=\"delete_source?source=" + source.GetName() + "\">delete</a></td>";
         sourcelist += "</tr>\n";
     }
     sourcelist += "</table>";
     return sourcelist;
 }
 
-std::string MediaController::CreateVideoList(const DVRLite::Source& source) const
+std::string MediaController::CreateVideoList(const Source& source) const
 {
     std::string videolist;
-    for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator("videos/" + source.name))
+    for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator("videos/" + source.GetName()))
     {
         if (entry.path().extension() == ".mp4")
         {
@@ -117,12 +118,12 @@ std::string MediaController::CreateVideoList(const DVRLite::Source& source) cons
 std::string MediaController::CreateSourceCheckboxes() const
 {
     std::string sourcecheckboxes;
-    for (const DVRLite::Source& source : dvrlite->GetSources())
-        sourcecheckboxes += "<input id=\"trigger_" + source.name + "\" name=\"trigger_" + source.name + "\" type=\"checkbox\">" + source.name + "</br>";
+    for (const Source& source : dvrlite->GetSources())
+        sourcecheckboxes += "<input id=\"trigger_" + source.GetName() + "\" name=\"trigger_" + source.GetName() + "\" type=\"checkbox\">" + source.GetName() + "</br>";
     return sourcecheckboxes;
 }
 
-void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& content, const DVRLite::Source &currentSource) const
+void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& content, const Source &currentSource) const
 {
     if (content.find("#header#") != std::string::npos)
         replace_substring(content, "#header#", CreateHeader(pageTitle), content);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils.hpp"
+#include "Source.h"
 
 #include "oatpp/web/server/api/ApiController.hpp"
 #include "oatpp/web/protocol/http/outgoing/StreamingBody.hpp"
@@ -28,10 +29,10 @@ private:
 
   std::string CreateHeader(const std::string &pageTitle) const;
   std::string CreateSourceList() const;
-  std::string CreateVideoList(const DVRLite::Source &source) const;
+  std::string CreateVideoList(const Source &source) const;
   std::string CreateSourceCheckboxes() const;
 
-  void ApplyTemplates(const std::string& pageTitle, std::string& content, const DVRLite::Source& currentSource) const;
+  void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource) const;
 
   //static std::string ReplaceTag(const std::string &sourceContent, const std::string &tag, const std::string &replacement);
 
@@ -72,7 +73,7 @@ public:
 
           std::string filepath = std::string(ROOT_PATH) + "sourcelist.html";
           std::string content = loadFromFile(filepath.c_str())->std_str();
-          controller->ApplyTemplates("Sources", content, DVRLite::Source());
+          controller->ApplyTemplates("Sources", content, Source());
           //replace_substring(content, "#sourcelist#", controller->CreateSourceList(), content);
 
           return _return(controller->createResponse(Status::CODE_200, content.c_str()));
@@ -107,7 +108,7 @@ public:
 
       Action act() override
       {
-          controller->dvrlite->AddSource(DVRLite::Source(request->getQueryParameters()));          
+          controller->dvrlite->AddSource(Source(request->getQueryParameters()));          
           auto response = controller->createResponse(Status::CODE_302, "");
           response->putHeader("Location", "/");
           return _return(response);
@@ -167,7 +168,7 @@ public:
               std::filesystem::path file(filename);
               file.replace_extension("");
               std::string content = loadFromFile(filepath.c_str())->std_str();
-              controller->ApplyTemplates(file.string(), content, DVRLite::Source());
+              controller->ApplyTemplates(file.string(), content, Source());
               return _return(controller->createResponse(Status::CODE_200, content.c_str()));
           }
           else
