@@ -4,6 +4,7 @@
 #include "DVRLite.h"
 #include "Web/MediaController.hpp"
 #include "json/json.h"
+#include <filesystem>
 #include <fstream>
 
 int main(int argc, const char* argv[]) 
@@ -33,9 +34,9 @@ DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/")
     config.Load();
 
     //load the sources
-    if (std::filesystem::is_directory("sources"))
+    if (std::filesystem::is_directory(config.GetSourcePath()))
     {
-        for (std::filesystem::directory_entry directory : std::filesystem::directory_iterator("sources"))
+        for (std::filesystem::directory_entry directory : std::filesystem::directory_iterator(config.GetSourcePath()))
         {
             std::filesystem::path configPath = directory.path() / "config.json";
             if (directory.is_directory() && std::filesystem::is_regular_file(configPath))
@@ -54,7 +55,7 @@ void DVRLite::AddSource(const Source &source)
 {
     //TODO remove existing
     sources.push_back(source);
-    source.Save(std::string("sources/") + source.GetName() + std::string("/config.json"));
+    source.Save(std::filesystem::path(config.GetSourcePath()) / source.GetName() / std::string("config.json"));
 }
 
 DVRLite::Config& DVRLite::GetConfig()
@@ -117,4 +118,10 @@ std::string DVRLite::Config::GetWebPath() const
 {
     std::lock_guard lock(configMutex);
     return webPath;
+}
+
+std::string DVRLite::Config::GetSourcePath() const
+{
+    std::lock_guard lock(configMutex);
+    return (std::filesystem::path(configPath).parent_path() / "sources").string();
 }

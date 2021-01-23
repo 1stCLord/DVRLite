@@ -65,7 +65,7 @@ public:
   }());
   
   OATPP_CREATE_COMPONENT(std::shared_ptr<StaticFilesManager>, staticFilesManager)([] {
-    return std::make_shared<StaticFilesManager>(VIDEO_PATH) ;
+    return std::make_shared<StaticFilesManager>() ;
   }());
 
 };

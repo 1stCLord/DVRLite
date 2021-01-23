@@ -8,7 +8,7 @@
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
 #include <filesystem>
-
+#include <json/json.h>
 #include <unordered_map>
 #include <filesystem>
 #include <iostream>
@@ -33,15 +33,15 @@ private:
   std::string CreateSourceCheckboxes() const;
 
   void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource) const;
+  std::string ApplyTemplate(const std::string& templatename, const std::string& value) const;
 
-  //static std::string ReplaceTag(const std::string &sourceContent, const std::string &tag, const std::string &replacement);
+  Json::Value templates;
 
 public:
-  MediaController(const std::shared_ptr<ObjectMapper>& objectMapper)
-    : oatpp::web::server::api::ApiController(objectMapper)
-  {}
+    MediaController(const std::shared_ptr<ObjectMapper>& objectMapper);
 
   void setDVR(DVRLite* dvrlite) { this->dvrlite = dvrlite; }
+  void LoadTemplates();
 public:
 
   /**
@@ -169,6 +169,21 @@ public:
       Action act() override
       {
           return _return(controller->createResponse(Status::CODE_200,"ok"));
+      }
+
+  };
+
+  ENDPOINT_ASYNC("GET", "favicon.png", Favicon)
+  {
+
+      ENDPOINT_ASYNC_INIT(Favicon)
+
+          Action act() override
+      {
+          auto range = request->getHeader(Header::RANGE);
+          std::string webPath = controller->dvrlite->GetConfig().GetWebPath() + "favicon.png";
+          return _return(controller->getStaticFileResponse(oatpp::String(webPath.c_str()), range));
+
       }
 
   };

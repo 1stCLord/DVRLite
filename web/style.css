@@ -1,11 +1,23 @@
-	body {background-color: DimGray;}
-	h1
-	{
-		font-size: 18pt;
-		text-shadow: 1px 1px black;
-		color: Aquamarine;
-	}
-	
-	a{color:BurlyWood;}
-	a:visited{color:DarkSalmon;}
-	hr{border-top: 3px solid DarkSlateGrey;}
+body {background-color: DimGray;}
+h1
+{
+	font-size: 18pt;
+	text-shadow: 1px 1px black;
+	color: Aquamarine;
+}
+
+a{color:BurlyWood;}
+a:visited{color:DarkSalmon;}
+hr{border-top: 3px solid DarkSlateGrey;}
+
+.headermenu
+{
+	width: 10%;
+	float: right;
+	display: flex;
+}
+
+.headermenuitem
+{
+	flex:2
+}

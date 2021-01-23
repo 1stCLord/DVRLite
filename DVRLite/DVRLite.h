@@ -29,6 +29,7 @@ public:
 		void SetRecordPath(const std::string &recordPath);
 		std::string GetRecordPath() const;
 		std::string GetWebPath() const;
+		std::string GetSourcePath() const;
 	};
 
 

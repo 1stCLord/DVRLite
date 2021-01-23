@@ -1,0 +1,13 @@
+{
+"headertop": "<a href=\"/\"><h1>DVRLite</h1></a>",
+"headertitle" : "<hr>{}",
+"headermenu":"<div class=headermenu><a class=headermenuitem href=\"add.html\">➕ Add</a><a class=headermenuitem href=\"config.html\">🎚️ Config</a></div><hr>",
+
+"sourcerecord" : "<tr>{}</tr>",
+"sourcedata" : "<td>{}</td>",
+"sourcedeletebutton":"<td><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
+"sourcecheckboxes":"<input id=\"trigger_{}\" name=\"trigger_{}\" type=\"checkbox\">{}</br>",
+
+"videoelement":"<a href={}>{}</a><br>"
+
+}

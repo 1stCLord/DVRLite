@@ -14,17 +14,11 @@
 class StaticFilesManager
 {
 private:
-  oatpp::String m_basePath;
   oatpp::concurrency::SpinLock m_lock;
   std::unordered_map<oatpp::String, oatpp::String> m_cache;
 private:
   oatpp::String getExtension(const oatpp::String& filename);
-public:
-  
-  StaticFilesManager(const oatpp::String& basePath)
-    : m_basePath(basePath)
-  {}
-  
+public:  
   oatpp::String getFile(const oatpp::String& path);
   
   oatpp::String guessMimeType(const oatpp::String& filename);
@@ -37,6 +31,7 @@ v_int64 getMillisTickCount();
 
 std::string escapeUrl(std::string &url);
 std::string unescapeUrl(std::string& url);
+std::string replace_substring(const std::string& source, const std::string& tag, const std::string& replacement);
 bool replace_substring(const std::string& source, const std::string& tag, const std::string& replacement, std::string& result);
 
 std::string createFullOnvifPath(const std::string& url);

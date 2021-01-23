@@ -30,7 +30,7 @@ oatpp::String StaticFilesManager::getFile(const oatpp::String& path)
   if(file) {
     return file;
   }
-  oatpp::String filename = m_basePath + "/" + path;
+  oatpp::String filename = path;
   file = loadFromFile(filename->c_str());
   return file;
 }
@@ -111,6 +111,13 @@ std::string unescapeUrl(std::string& url)
     resultString += url.substr(end);
 
     return resultString;
+}
+
+std::string replace_substring(const std::string& source, const std::string& tag, const std::string& replacement)
+{
+    std::string result;
+    replace_substring(source, tag, replacement, result);
+    return result;
 }
 
 bool replace_substring(const std::string& source, const std::string& tag, const std::string& replacement, std::string &result)

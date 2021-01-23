@@ -1,7 +1,7 @@
 ﻿
 #include "MediaController.hpp"
 #include "AppComponent.hpp"
-
+#include <fstream>
 #include "oatpp/network/Server.hpp"
 #include "DVRLite.h"
 
@@ -72,7 +72,9 @@ std::shared_ptr<MediaController::OutgoingResponse> MediaController::getRangeResp
 
 std::string MediaController::CreateHeader(const std::string &pageTitle) const
 {
-    return "<a href=\"/\"><h1>DVRLite</h1></a><hr>" + pageTitle + "<div style=\"width: 30%;float: right;\"><a href=\"add.html\">Add</a><a href=\"config.html\">config</a></div><hr>";
+    return templates["headertop"].asString() +
+    ApplyTemplate("headertitle", pageTitle) +
+    templates["headermenu"].asString();
 }
 
 std::string MediaController::CreateSourceList() const
@@ -82,16 +84,16 @@ std::string MediaController::CreateSourceList() const
     for (const Source& source : dvrlite->GetSources())
     {
         sourcelist += "<tr>";
-        sourcelist += "<td>" + source.GetName() + "</td>";
-        sourcelist += "<td>" + source.GetOnvifAddress() + "</td>";
-        sourcelist += "<td>" + source.GetVideoAddress() + "</td>";
-        sourcelist += "<td>" + std::to_string(source.GetDuration()) + "</td>";
-        sourcelist += "<td>" + std::to_string(source.GetQuota()) + "</td>";
-        sourcelist += "<td>";
+        sourcelist += ApplyTemplate("sourcedata", source.GetName());
+        sourcelist += ApplyTemplate("sourcedata", source.GetOnvifAddress());
+        sourcelist += ApplyTemplate("sourcedata", source.GetVideoAddress());
+        sourcelist += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
+        sourcelist += ApplyTemplate("sourcedata", std::to_string(source.GetQuota()));
+        std::string triggers;
         for (const std::string& trigger : source.GetTriggers())
-            sourcelist += trigger + "</br>";
-        sourcelist += "</td>";
-        sourcelist += "<td><a href=\"delete_source?source=" + source.GetName() + "\">delete</a></td>";
+            triggers += trigger + "</br>";
+        sourcelist += ApplyTemplate("sourcedata", triggers);
+        sourcelist += ApplyTemplate("sourcedeletebutton", source.GetName());
         sourcelist += "</tr>\n";
     }
     sourcelist += "</table>";
@@ -105,11 +107,7 @@ std::string MediaController::CreateVideoList(const Source& source) const
     {
         if (entry.path().extension() == ".mp4")
         {
-            videolist += "<a href='videos/";
-            videolist += entry.path().filename().string();
-            videolist += "'>";
-            videolist += entry.path().filename().string();
-            videolist += std::string("</a><br>");
+            videolist += ApplyTemplate("videoelement", entry.path().filename().string());
         }
     }
     return videolist;
@@ -119,8 +117,18 @@ std::string MediaController::CreateSourceCheckboxes() const
 {
     std::string sourcecheckboxes;
     for (const Source& source : dvrlite->GetSources())
-        sourcecheckboxes += "<input id=\"trigger_" + source.GetName() + "\" name=\"trigger_" + source.GetName() + "\" type=\"checkbox\">" + source.GetName() + "</br>";
+        sourcecheckboxes += ApplyTemplate("sourcecheckboxes", source.GetName());
     return sourcecheckboxes;
+}
+
+std::string MediaController::ApplyTemplate(const std::string& templatename, const std::string& value) const
+{
+    Json::Value jsonvalue = templates[templatename];
+    std::string result = templates[templatename].asString();
+    bool found = true;
+    while(found)
+        found = replace_substring(result, "{}", value, result);
+    return result;
 }
 
 void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& content, const Source &currentSource) const
@@ -135,6 +143,21 @@ void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& 
         replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
 }
 
+MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapper) :
+    oatpp::web::server::api::ApiController(objectMapper)
+{
+}
+
+void MediaController::LoadTemplates()
+{
+    std::string webPath = dvrlite->GetConfig().GetWebPath();
+    std::ifstream file(std::filesystem::path(webPath) / "templates.json");
+    if (file.is_open())
+    {
+        file >> templates;
+    }
+}
+
 void MediaController::run(DVRLite *dvrlite)
 {
     oatpp::base::Environment::init();
@@ -147,6 +170,7 @@ void MediaController::run(DVRLite *dvrlite)
 
     auto mediaController = MediaController::createShared();
     mediaController->setDVR(dvrlite);
+    mediaController->LoadTemplates();
     mediaController->addEndpointsToRouter(router);
 
     /* create server */
