@@ -7,7 +7,7 @@
 #include <string>
 
 #define VIDEOLIST_TAG "#videolist#"
-#define ROOT_PATH "F:/Projects/DVRLite/web/"
+//#define ROOT_PATH "F:/Projects/DVRLite/web/"
 #define VIDEO_PATH "F:/Projects/DVRLite/videos"
 #define PORT 8000
 

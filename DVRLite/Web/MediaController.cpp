@@ -1,4 +1,4 @@
-
+﻿
 #include "MediaController.hpp"
 #include "AppComponent.hpp"
 
@@ -72,7 +72,7 @@ std::shared_ptr<MediaController::OutgoingResponse> MediaController::getRangeResp
 
 std::string MediaController::CreateHeader(const std::string &pageTitle) const
 {
-    return "<a href=\"/\"><h1>DVRLite</h1></a><hr>" + pageTitle + "<div style=\"width: 30%;float: right;\"><a href=\"add.html\">Add</a></div><hr>";
+    return "<a href=\"/\"><h1>DVRLite</h1></a><hr>" + pageTitle + "<div style=\"width: 30%;float: right;\"><a href=\"add.html\">Add</a><a href=\"config.html\">config</a></div><hr>";
 }
 
 std::string MediaController::CreateSourceList() const

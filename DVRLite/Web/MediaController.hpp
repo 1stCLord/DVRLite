@@ -70,8 +70,8 @@ public:
 
       Action act() override
       {
-
-          std::string filepath = std::string(ROOT_PATH) + "sourcelist.html";
+          std::string webPath = controller->dvrlite->GetConfig().GetWebPath();
+          std::string filepath = webPath + "sourcelist.html";
           std::string content = loadFromFile(filepath.c_str())->std_str();
           controller->ApplyTemplates("Sources", content, Source());
           //replace_substring(content, "#sourcelist#", controller->CreateSourceList(), content);
@@ -109,6 +109,24 @@ public:
       Action act() override
       {
           controller->dvrlite->AddSource(Source(request->getQueryParameters()));          
+          auto response = controller->createResponse(Status::CODE_302, "");
+          response->putHeader("Location", "/");
+          return _return(response);
+      }
+
+  };
+
+  ENDPOINT_ASYNC("GET", "configure", Configure)
+  {
+
+      ENDPOINT_ASYNC_INIT(Configure)
+
+      Action act() override
+      {
+          QueryParams queryParams = request->getQueryParameters();
+          std::string recordPath = queryParams.get("recordPath")->std_str();
+          DVRLite::Config &config = controller->dvrlite->GetConfig();
+          config.SetRecordPath(recordPath);
           auto response = controller->createResponse(Status::CODE_302, "");
           response->putHeader("Location", "/");
           return _return(response);
@@ -161,8 +179,9 @@ public:
 
           Action act() override
       {
+          std::string webPath = controller->dvrlite->GetConfig().GetWebPath();
           std::string filename = request->getPathTail()->std_str();
-          std::string filepath = std::string(ROOT_PATH) + filename;
+          std::string filepath = webPath + filename;
           if (std::filesystem::is_regular_file(filepath))
           {
               std::filesystem::path file(filename);

@@ -3,6 +3,8 @@
 
 #include "DVRLite.h"
 #include "Web/MediaController.hpp"
+#include "json/json.h"
+#include <fstream>
 
 int main(int argc, const char* argv[]) 
 {
@@ -26,8 +28,10 @@ int main(int argc, const char* argv[])
     return 0;
 }
 
-DVRLite::DVRLite()
+DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/")
 {
+    config.Load();
+
     //load the sources
     if (std::filesystem::is_directory("sources"))
     {
@@ -36,8 +40,8 @@ DVRLite::DVRLite()
             std::filesystem::path configPath = directory.path() / "config.json";
             if (directory.is_directory() && std::filesystem::is_regular_file(configPath))
             {
-                Source source(configPath);
-                sources.push_back(source);
+                sources.push_back(Source(configPath));
+                Source& source = sources.back();
                 ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(source);
             }
         }
@@ -51,4 +55,66 @@ void DVRLite::AddSource(const Source &source)
     //TODO remove existing
     sources.push_back(source);
     source.Save(std::string("sources/") + source.GetName() + std::string("/config.json"));
+}
+
+DVRLite::Config& DVRLite::GetConfig()
+{
+    return config;
+}
+
+const DVRLite::Config& DVRLite::GetConfig() const
+{
+    return config;
+}
+
+DVRLite::Config::Config(const std::string& configPath, const std::string &webPath) : 
+    configPath(configPath), 
+    webPath(webPath)
+{}
+
+void DVRLite::Config::Load()
+{
+    std::ifstream file(configPath);
+    if (file.is_open())
+    {
+        Json::Value config;
+        file >> config;
+
+        std::lock_guard lock(configMutex);
+        recordPath = config["recordPath"].asString();
+    }
+}
+
+void DVRLite::Config::Save() const
+{
+    Json::Value source;
+    {
+        std::lock_guard lock(configMutex);
+        source["recordPath"] = recordPath;
+    }
+    std::filesystem::path fullpath(configPath);
+    std::filesystem::create_directories(fullpath.parent_path());
+    std::ofstream file(configPath);
+    file << source;
+}
+
+void DVRLite::Config::SetRecordPath(const std::string& recordPath)
+{
+    {
+        std::lock_guard lock(configMutex);
+        this->recordPath = recordPath;
+    }
+    Save();
+}
+
+std::string DVRLite::Config::GetRecordPath() const
+{
+    std::lock_guard lock(configMutex);
+    return recordPath;
+}
+
+std::string DVRLite::Config::GetWebPath() const
+{
+    std::lock_guard lock(configMutex);
+    return webPath;
 }

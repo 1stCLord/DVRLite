@@ -12,6 +12,25 @@
 class DVRLite
 {
 public:
+	class Config
+	{
+	private:
+		mutable std::mutex configMutex;
+		const std::string configPath;
+		std::string recordPath;
+		std::string webPath;
+
+	public:
+		Config(const std::string& configPath, const std::string& webPath);
+
+		void Load();
+		void Save() const;
+
+		void SetRecordPath(const std::string &recordPath);
+		std::string GetRecordPath() const;
+		std::string GetWebPath() const;
+	};
+
 
 	DVRLite();
 
@@ -20,10 +39,14 @@ public:
 	std::vector<Source>& GetSources() { return sources; }
 	FFmpeg *GetFFmpeg(const Source &source) { return ffmpegs[source.GetName()].get(); }
 	FFmpeg* GetFFmpeg(const std::string& source) { return ffmpegs[source].get(); }
+
+	Config& GetConfig();
+	const Config& GetConfig() const;
 private:
 
 	std::vector<Source> sources;
 	std::unordered_map<std::string, std::unique_ptr<FFmpeg>> ffmpegs;
 
+	Config config;
 	Onvif onvif;
 };

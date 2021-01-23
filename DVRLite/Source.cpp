@@ -74,21 +74,24 @@ void Source::Save(const std::filesystem::path& path) const
 void Source::Load(const std::filesystem::path& path)
 {
     std::ifstream file(path);
-    Json::Value source;
-    file >> source;
+    if (file.is_open())
+    {
+        Json::Value source;
+        file >> source;
 
-    std::lock_guard lock(sourceMutex);
-    name = source["name"].asString();
-    onvifAddress = source["onvifAddress"].asString();
-    customVideoAddress = source["customVideoAddress"].asString();
-    username = source["username"].asString();
-    password = source["password"].asString();
-    for (Json::Value& triggerValue : source["triggers"])
-        triggers.insert(triggerValue.asString());
-    duration = source["duration"].asUInt();
-    quota = source["quota"].asUInt();
-    recordAudio = source["recordAudio"].asBool();
-    recordVideo = source["recordVideo"].asBool();
+        std::lock_guard lock(sourceMutex);
+        name = source["name"].asString();
+        onvifAddress = source["onvifAddress"].asString();
+        customVideoAddress = source["customVideoAddress"].asString();
+        username = source["username"].asString();
+        password = source["password"].asString();
+        for (Json::Value& triggerValue : source["triggers"])
+            triggers.insert(triggerValue.asString());
+        duration = source["duration"].asUInt();
+        quota = source["quota"].asUInt();
+        recordAudio = source["recordAudio"].asBool();
+        recordVideo = source["recordVideo"].asBool();
+    }
 }
 
 std::string Source::GetName() const
