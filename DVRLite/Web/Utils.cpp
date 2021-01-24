@@ -93,7 +93,7 @@ v_int64 getMillisTickCount()
 
 std::string escapeUrl(std::string& url)
 {
-    //TODO
+    static_assert("TODO");
     return std::string();
 }
 

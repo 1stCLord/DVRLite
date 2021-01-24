@@ -166,8 +166,8 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
         // Get an AVPacket
         if (av_read_frame(context.ifmt_ctx, &pkt) < 0) 
         {
-            isRecording = false;
-            break;
+            //isRecording = false;
+            continue;
         }
 
         const StreamMap *current_stream_map = GetStreamMap(context, pkt.stream_index);
