@@ -194,3 +194,15 @@ std::string to_string(std::chrono::system_clock::time_point time, const std::str
     ss << std::put_time(&tm, format.c_str());
     return ss.str();
 }
+
+//video filename format yyyymmdd-hh-mm-ss
+std::string filename_to_datestring(const std::string& filename)
+{
+    std::string year = filename.substr(0, 4);
+    std::string month = filename.substr(4, 2);
+    std::string day = filename.substr(6, 2);
+    std::string hour = filename.substr(9, 2);
+    std::string minute = filename.substr(12, 2);
+    std::string second = filename.substr(15, 2);
+    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+}

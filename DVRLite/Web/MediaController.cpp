@@ -121,6 +121,31 @@ std::string MediaController::CreateVideoList(const Source& source) const
     return videolist;
 }
 
+std::string MediaController::CreateVideoTimeline(const Source& source) const
+{
+    std::string videotimeline;
+    std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
+    videoDirectory = videoDirectory / source.GetName();
+    if (std::filesystem::is_directory(videoDirectory))
+    {
+        int i = 1;
+        for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
+        {
+            if (entry.path().extension() == ".mp4")
+            {
+                if (i > 1)
+                    videotimeline += ",";
+
+                std::filesystem::path datetime = entry.path().filename();
+                datetime.replace_extension("");
+                std::vector<std::string> videoParameters{std::to_string(i++), '\'' + entry.path().filename().string() + '\'', '\'' + source.GetName() + '\'', '\'' + filename_to_datestring(datetime.string()) + '\''};
+                videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+            }
+        }
+    }
+    return ApplyTemplate("videotimeline", videotimeline);
+}
+
 std::string MediaController::CreateSourceCheckboxes() const
 {
     std::string sourcecheckboxes;
@@ -172,6 +197,8 @@ void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& 
         replace_substring(content, "#sourcelist#", CreateSourceList(), content);
     if (content.find("#videolist#") != std::string::npos)
         replace_substring(content, "#videolist#", CreateVideoList(currentSource), content);
+    if (content.find("#videotimeline#") != std::string::npos)
+        replace_substring(content, "#videotimeline#", CreateVideoTimeline(currentSource), content);
     if (content.find("#sourcecheckboxes#") != std::string::npos)
         replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
     if (content.find("#configform#") != std::string::npos)

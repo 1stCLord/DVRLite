@@ -39,3 +39,4 @@ bool split_string(const std::string& source, char token, std::string* first, std
 std::string createFullOnvifPath(const std::string& url);
 
 std::string to_string(std::chrono::system_clock::time_point time, const std::string &format);
+std::string filename_to_datestring(const std::string &filename);
