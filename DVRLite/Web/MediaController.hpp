@@ -31,9 +31,11 @@ private:
   std::string CreateSourceList() const;
   std::string CreateVideoList(const Source &source) const;
   std::string CreateSourceCheckboxes() const;
+  std::string CreateConfigList() const;
 
   void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource) const;
   std::string ApplyTemplate(const std::string& templatename, const std::string& value) const;
+  std::string ApplyTemplate(const std::string& templatename, const std::vector<std::string>& value) const;
 
   Json::Value templates;
 
@@ -113,7 +115,21 @@ public:
           response->putHeader("Location", "/");
           return _return(response);
       }
+  };
 
+  ENDPOINT_ASYNC("GET", "delete_source", DeleteSource)
+  {
+
+      ENDPOINT_ASYNC_INIT(DeleteSource)
+
+          Action act() override
+      {
+          std::string source = request->getQueryParameter("source")->std_str();
+          controller->dvrlite->RemoveSource(source);
+          auto response = controller->createResponse(Status::CODE_302, "");
+          response->putHeader("Location", "/");
+          return _return(response);
+      }
   };
 
   ENDPOINT_ASYNC("GET", "configure", Configure)

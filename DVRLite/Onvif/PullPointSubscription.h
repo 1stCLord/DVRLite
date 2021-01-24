@@ -17,11 +17,12 @@ public:
 	PullPointSubscription(PullPointSubscription&&) = delete;
 	PullPointSubscription& operator=(const PullPointSubscription&) = delete;
 	PullPointSubscription& operator=(PullPointSubscription&&) = delete;
+
+	Source& source;
 private:
 	std::atomic_bool running;
 	std::thread thread;
 
-	Source &source;
 	std::function<void(void)> alert;
 
 	std::string pullpoint;

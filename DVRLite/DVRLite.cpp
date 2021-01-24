@@ -41,8 +41,8 @@ DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/")
             std::filesystem::path configPath = directory.path() / "config.json";
             if (directory.is_directory() && std::filesystem::is_regular_file(configPath))
             {
-                sources.push_back(Source(configPath));
-                Source& source = sources.back();
+                std::pair<std::unordered_set<Source>::iterator, bool> result = sources.insert(Source(configPath));
+                const Source& source = *(result.first);
                 ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(source);
             }
         }
@@ -53,9 +53,18 @@ DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/")
 
 void DVRLite::AddSource(const Source &source)
 {
-    //TODO remove existing
-    sources.push_back(source);
-    source.Save(std::filesystem::path(config.GetSourcePath()) / source.GetName() / std::string("config.json"));
+    std::pair<SourceSet::iterator, bool> result = sources.insert(source);
+    const Source& ourSource = *(result.first);
+    ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(ourSource);
+    onvif.Add(ourSource);
+    ourSource.Save(std::filesystem::path(config.GetSourcePath()) / source.GetName() / std::string("config.json"));
+}
+
+void DVRLite::RemoveSource(const std::string& sourceName)
+{
+    ffmpegs[sourceName].reset();
+    onvif.Remove(sourceName);
+    sources.erase(std::find_if(sources.begin(), sources.end(), [&](const Source& source) {return source.GetName() == sourceName; }));
 }
 
 DVRLite::Config& DVRLite::GetConfig()

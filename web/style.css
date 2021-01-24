@@ -5,19 +5,50 @@ h1
 	text-shadow: 1px 1px black;
 	color: Aquamarine;
 }
+h2
+{
+	margin:4pt;
+	font-size: 14pt;
+	text-shadow: 1px 1px black;
+	color: Aquamarine;
+	flex:2;
+}
 
 a{color:BurlyWood;}
 a:visited{color:DarkSalmon;}
 hr{border-top: 3px solid DarkSlateGrey;}
 
+.header
+{
+	width: 100%;
+	display: flex;
+}
+
 .headermenu
 {
 	width: 10%;
-	float: right;
 	display: flex;
+	align-self:center;
 }
 
 .headermenuitem
 {
-	flex:2
+	flex:2;
+}
+
+.sourcetable
+{
+	width:100%;
+	background-color:black;
+}
+
+.sourcerecord, .sourceheaderrecord
+{
+	font-size:14pt;
+	color:tomato;
+	background-color: DarkSlateGrey;
+}
+.sourcerecord:hover
+{
+	background-color: lightgrey;
 }

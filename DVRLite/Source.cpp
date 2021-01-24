@@ -2,6 +2,7 @@
 #include <json/json.h>
 #include <iostream>
 #include <fstream>
+#include <functional>
 #include "Web/Utils.hpp"
 
 Source::Source(const QueryParams& queryParams)
@@ -158,4 +159,9 @@ std::unordered_set<std::string> Source::GetTriggers() const
 {
     std::lock_guard lock(sourceMutex);
     return triggers;
+}
+
+size_t Source::Hash::operator() (const Source& source) const 
+{ 
+    return std::hash<std::string>{}(source.GetName());
 }

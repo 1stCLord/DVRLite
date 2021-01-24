@@ -80,23 +80,24 @@ std::string MediaController::CreateHeader(const std::string &pageTitle) const
 std::string MediaController::CreateSourceList() const
 {
     std::string sourcelist;
-    sourcelist += "<table style=\"width: 100%;\">";
+    sourcelist += templates["sourceheader"].asString();
     for (const Source& source : dvrlite->GetSources())
     {
-        sourcelist += "<tr>";
-        sourcelist += ApplyTemplate("sourcedata", source.GetName());
-        sourcelist += ApplyTemplate("sourcedata", source.GetOnvifAddress());
-        sourcelist += ApplyTemplate("sourcedata", source.GetVideoAddress());
-        sourcelist += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
-        sourcelist += ApplyTemplate("sourcedata", std::to_string(source.GetQuota()));
+        std::string sourcedata;
+        sourcedata += ApplyTemplate("sourcedata", std::string((const char *)u8"📹") + source.GetName());
+        sourcedata += ApplyTemplate("sourcedata", source.GetOnvifAddress());
+        sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
+        sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
+        sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetQuota()));
         std::string triggers;
         for (const std::string& trigger : source.GetTriggers())
             triggers += trigger + "</br>";
-        sourcelist += ApplyTemplate("sourcedata", triggers);
-        sourcelist += ApplyTemplate("sourcedeletebutton", source.GetName());
-        sourcelist += "</tr>\n";
+        sourcedata += ApplyTemplate("sourcedata", triggers);
+        sourcedata += ApplyTemplate("sourcedeletebutton", source.GetName());
+
+        sourcelist += ApplyTemplate("sourcerecord", sourcedata);
     }
-    sourcelist += "</table>";
+    sourcelist = ApplyTemplate("sourcetable", sourcelist);
     return sourcelist;
 }
 
@@ -121,6 +122,15 @@ std::string MediaController::CreateSourceCheckboxes() const
     return sourcecheckboxes;
 }
 
+std::string MediaController::CreateConfigList() const
+{
+    std::string configlist;
+    std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", dvrlite->GetConfig().GetRecordPath(), "required" };
+    configlist = ApplyTemplate("textrecord", recordParameters);
+    configlist += templates["submitrecord"].asString();
+    return ApplyTemplate("configform", configlist);
+}
+
 std::string MediaController::ApplyTemplate(const std::string& templatename, const std::string& value) const
 {
     Json::Value jsonvalue = templates[templatename];
@@ -128,6 +138,20 @@ std::string MediaController::ApplyTemplate(const std::string& templatename, cons
     bool found = true;
     while(found)
         found = replace_substring(result, "{}", value, result);
+    return result;
+}
+
+std::string MediaController::ApplyTemplate(const std::string& templatename, const std::vector<std::string>& values) const
+{
+    Json::Value jsonvalue = templates[templatename];
+    std::string result = templates[templatename].asString();
+    for (int i = 0; i < values.size(); ++i)
+    {
+        std::string tag = '{' + std::to_string(i) + '}';
+        bool found = true;
+        while (found)
+            found = replace_substring(result, tag, values[i], result);
+    }
     return result;
 }
 
@@ -141,6 +165,8 @@ void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& 
         replace_substring(content, "#videolist#", CreateVideoList(currentSource), content);
     if (content.find("#sourcecheckboxes#") != std::string::npos)
         replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
+    if (content.find("#configform#") != std::string::npos)
+        replace_substring(content, "#configform#", CreateConfigList(), content);
 }
 
 MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapper) :

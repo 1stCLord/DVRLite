@@ -1,13 +1,19 @@
 {
 "headertop": "<a href=\"/\"><h1>DVRLite</h1></a>",
-"headertitle" : "<hr>{}",
-"headermenu":"<div class=headermenu><a class=headermenuitem href=\"add.html\">➕ Add</a><a class=headermenuitem href=\"config.html\">🎚️ Config</a></div><hr>",
+"headertitle" : "<hr><div class=header><h2>{}</h2>",
+"headermenu":"<div class=headermenu><a class=headermenuitem href=\"add.html\">➕ Add</a><a class=headermenuitem href=\"config.html\">🎚️ Config</a></div></div><hr>",
 
-"sourcerecord" : "<tr>{}</tr>",
+"sourcetable" : "<table class=sourcetable>{}</table>",
+"sourcerecord" : "<tr class=sourcerecord>{}</tr>",
+"sourceheader" : "<tr class=sourceheaderrecord><th>Name</th><th>Onvif Address</th><th>Video Address</th><th>Record Duration</th><th>Disk Quota</th><th>Triggers</th><th></th></tr>",
 "sourcedata" : "<td>{}</td>",
 "sourcedeletebutton":"<td><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
 "sourcecheckboxes":"<input id=\"trigger_{}\" name=\"trigger_{}\" type=\"checkbox\">{}</br>",
 
-"videoelement":"<a href={}>{}</a><br>"
+"videoelement":"<a href={}>{}</a><br>",
 
+"configform":"<form action=\"configure\" method=\"get\"><table>{}</table></form>",
+
+"textrecord":"<tr><td><label for={0}>{1}</label></td><td><input id={0} name={0} value={2} {3}></td></tr>",
+"submitrecord":"<tr><td></td><td><input type=\"submit\"></td></tr>"
 }

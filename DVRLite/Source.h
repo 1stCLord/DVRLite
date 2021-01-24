@@ -68,4 +68,6 @@ public:
 	bool GetRecordVideo() const;
 	bool GetRecordAudio() const;
 	std::unordered_set<std::string> GetTriggers() const;
+
+	struct Hash { size_t operator() (const Source& source) const; };
 };

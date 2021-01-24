@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <vector>
+#include <unordered_set>
 #include <unordered_map>
 #include "Onvif/Onvif.h"
 #include "Source.h"
@@ -32,20 +32,25 @@ public:
 		std::string GetSourcePath() const;
 	};
 
+	using SourceSet = std::unordered_set <Source, Source::Hash>;
+
 
 	DVRLite();
 
 	void AddSource(const Source &source);
-	//const std::unordered_set<Source, Source::Hash>& GetSources() const { return sources; }
-	std::vector<Source>& GetSources() { return sources; }
-	FFmpeg *GetFFmpeg(const Source &source) { return ffmpegs[source.GetName()].get(); }
+	void RemoveSource(const std::string& source);
+
+	SourceSet& GetSources() { return sources; }
+	FFmpeg* GetFFmpeg(const Source& source) { return GetFFmpeg(source.GetName()); }
+	FFmpeg* GetFFmpeg(const Source& source) const { return GetFFmpeg(source.GetName()); }
 	FFmpeg* GetFFmpeg(const std::string& source) { return ffmpegs[source].get(); }
+	FFmpeg* GetFFmpeg(const std::string& source) const { return (*ffmpegs.find(source)).second.get();}
 
 	Config& GetConfig();
 	const Config& GetConfig() const;
 private:
 
-	std::vector<Source> sources;
+	SourceSet sources;
 	std::unordered_map<std::string, std::unique_ptr<FFmpeg>> ffmpegs;
 
 	Config config;
