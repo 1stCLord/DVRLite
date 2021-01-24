@@ -21,7 +21,7 @@ public:
 		std::string webPath;
 
 	public:
-		Config(const std::string& configPath, const std::string& webPath);
+		Config(const std::string& configPath, const std::string& webPath, uint16_t port);
 
 		void Load();
 		void Save() const;
@@ -30,6 +30,10 @@ public:
 		std::string GetRecordPath() const;
 		std::string GetWebPath() const;
 		std::string GetSourcePath() const;
+		void SetPort(uint16_t port);
+		uint16_t GetPort()const;
+
+		static uint16_t Port;
 	};
 
 	using SourceSet = std::unordered_set <Source, Source::Hash>;
@@ -40,6 +44,7 @@ public:
 	void AddSource(const Source &source);
 	void RemoveSource(const std::string& source);
 
+	const Source& GetSource(const std::string &sourceName) const;
 	SourceSet& GetSources() { return sources; }
 	FFmpeg* GetFFmpeg(const Source& source) { return GetFFmpeg(source.GetName()); }
 	FFmpeg* GetFFmpeg(const Source& source) const { return GetFFmpeg(source.GetName()); }

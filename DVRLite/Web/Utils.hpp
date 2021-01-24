@@ -5,11 +5,12 @@
 
 #include <unordered_map>
 #include <string>
+#include <chrono>
 
-#define VIDEOLIST_TAG "#videolist#"
+//#define VIDEOLIST_TAG "#videolist#"
 //#define ROOT_PATH "F:/Projects/DVRLite/web/"
-#define VIDEO_PATH "F:/Projects/DVRLite/videos"
-#define PORT 8000
+//#define VIDEO_PATH "F:/Projects/DVRLite/videos"
+//#define PORT 8000
 
 class StaticFilesManager
 {
@@ -33,5 +34,8 @@ std::string escapeUrl(std::string &url);
 std::string unescapeUrl(std::string& url);
 std::string replace_substring(const std::string& source, const std::string& tag, const std::string& replacement);
 bool replace_substring(const std::string& source, const std::string& tag, const std::string& replacement, std::string& result);
+bool split_string(const std::string& source, char token, std::string* first, std::string* second);
 
 std::string createFullOnvifPath(const std::string& url);
+
+std::string to_string(std::chrono::system_clock::time_point time, const std::string &format);

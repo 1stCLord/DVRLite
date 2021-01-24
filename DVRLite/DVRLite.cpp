@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <fstream>
 
+uint16_t DVRLite::Config::Port = 8000;
+
 int main(int argc, const char* argv[]) 
 {
     //using namespace std::chrono_literals;
@@ -29,7 +31,7 @@ int main(int argc, const char* argv[])
     return 0;
 }
 
-DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/")
+DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/", 8000)
 {
     config.Load();
 
@@ -48,7 +50,7 @@ DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/")
         }
     }
     //get the onvif info
-    onvif = Onvif(this);
+    onvif.Init(this);
 }
 
 void DVRLite::AddSource(const Source &source)
@@ -67,6 +69,11 @@ void DVRLite::RemoveSource(const std::string& sourceName)
     sources.erase(std::find_if(sources.begin(), sources.end(), [&](const Source& source) {return source.GetName() == sourceName; }));
 }
 
+const Source& DVRLite::GetSource(const std::string &sourceName) const
+{
+    return *std::find_if(sources.begin(), sources.end(), [&](const Source& source) {return source.GetName() == sourceName; });
+}
+
 DVRLite::Config& DVRLite::GetConfig()
 {
     return config;
@@ -77,10 +84,12 @@ const DVRLite::Config& DVRLite::GetConfig() const
     return config;
 }
 
-DVRLite::Config::Config(const std::string& configPath, const std::string &webPath) : 
+DVRLite::Config::Config(const std::string& configPath, const std::string &webPath, uint16_t port) : 
     configPath(configPath), 
     webPath(webPath)
-{}
+{
+    Port = port;
+}
 
 void DVRLite::Config::Load()
 {
@@ -91,7 +100,12 @@ void DVRLite::Config::Load()
         file >> config;
 
         std::lock_guard lock(configMutex);
-        recordPath = config["recordPath"].asString();
+        std::string newRecordPath = config["recordPath"].asString();
+        if (!newRecordPath.empty())
+            recordPath = newRecordPath;
+        uint16_t port = config["port"].asUInt();
+        if (port!=0)
+            Port = port;
     }
 }
 
@@ -101,6 +115,7 @@ void DVRLite::Config::Save() const
     {
         std::lock_guard lock(configMutex);
         source["recordPath"] = recordPath;
+        source["port"] = Port;
     }
     std::filesystem::path fullpath(configPath);
     std::filesystem::create_directories(fullpath.parent_path());
@@ -133,4 +148,16 @@ std::string DVRLite::Config::GetSourcePath() const
 {
     std::lock_guard lock(configMutex);
     return (std::filesystem::path(configPath).parent_path() / "sources").string();
+}
+
+uint16_t DVRLite::Config::GetPort() const
+{
+    std::lock_guard lock(configMutex);
+    return Port;
+}
+
+void DVRLite::Config::SetPort(uint16_t port)
+{
+    std::lock_guard lock(configMutex);
+    this->Port = port;
 }

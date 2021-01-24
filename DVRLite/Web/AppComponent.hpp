@@ -34,7 +34,7 @@ public:
    */
   OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, serverConnectionProvider)([] {
     /* non_blocking connections should be used with AsyncHttpConnectionHandler for AsyncIO */
-    return oatpp::network::tcp::server::ConnectionProvider::createShared(oatpp::network::Address("0.0.0.0", PORT));
+    return oatpp::network::tcp::server::ConnectionProvider::createShared(oatpp::network::Address("0.0.0.0", DVRLite::Config::Port));
   }());
   
   /**
@@ -67,5 +67,4 @@ public:
   OATPP_CREATE_COMPONENT(std::shared_ptr<StaticFilesManager>, staticFilesManager)([] {
     return std::make_shared<StaticFilesManager>() ;
   }());
-
 };

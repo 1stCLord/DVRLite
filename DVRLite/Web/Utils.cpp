@@ -4,6 +4,8 @@
 #include <fstream>
 #include <cstring>
 #include <stdarg.h>
+#include <iomanip>
+#include <sstream>
 
 oatpp::String StaticFilesManager::getExtension(const oatpp::String& filename) 
 {
@@ -134,6 +136,15 @@ bool replace_substring(const std::string& source, const std::string& tag, const 
     return true;
 }
 
+bool split_string(const std::string& source, char token, std::string *first, std::string *second)
+{
+    size_t position = source.find(token);
+    if (position == std::string::npos)return false;
+    if(first)*first = source.substr(0, position);
+    if(second)*second = source.substr(position);
+    return true;
+}
+
 std::string createFullOnvifPath(const std::string& url)
 {
     size_t schemeEnd = url.find("://");
@@ -173,4 +184,13 @@ std::string createFullOnvifPath(const std::string& url)
     }
 
     return scheme + domainOrIp + port + endpoint;
+}
+
+std::string to_string(std::chrono::system_clock::time_point time, const std::string &format)
+{
+    std::time_t tt = std::chrono::system_clock::to_time_t(time);
+    std::tm tm = *std::gmtime(&tt); //GMT (UTC)
+    std::stringstream ss;
+    ss << std::put_time(&tm, format.c_str());
+    return ss.str();
 }

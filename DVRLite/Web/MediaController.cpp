@@ -84,7 +84,8 @@ std::string MediaController::CreateSourceList() const
     for (const Source& source : dvrlite->GetSources())
     {
         std::string sourcedata;
-        sourcedata += ApplyTemplate("sourcedata", std::string((const char *)u8"📹") + source.GetName());
+        std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName() };
+        sourcedata += ApplyTemplate("sourcelink", sourceLinkParameters);
         sourcedata += ApplyTemplate("sourcedata", source.GetOnvifAddress());
         sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
         sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
@@ -104,11 +105,16 @@ std::string MediaController::CreateSourceList() const
 std::string MediaController::CreateVideoList(const Source& source) const
 {
     std::string videolist;
-    for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator("videos/" + source.GetName()))
+    std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
+    videoDirectory = videoDirectory / source.GetName();
+    if (std::filesystem::is_directory(videoDirectory))
     {
-        if (entry.path().extension() == ".mp4")
+        for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
         {
-            videolist += ApplyTemplate("videoelement", entry.path().filename().string());
+            if (entry.path().extension() == ".mp4")
+            {
+                videolist += ApplyTemplate("videoelement", entry.path().filename().string());
+            }
         }
     }
     return videolist;
@@ -127,6 +133,8 @@ std::string MediaController::CreateConfigList() const
     std::string configlist;
     std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", dvrlite->GetConfig().GetRecordPath(), "required" };
     configlist = ApplyTemplate("textrecord", recordParameters);
+    std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "" };
+    configlist += ApplyTemplate("numberrecord", portParameters);
     configlist += templates["submitrecord"].asString();
     return ApplyTemplate("configform", configlist);
 }

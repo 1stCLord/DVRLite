@@ -9,6 +9,7 @@
 "sourcerecord" : "<tr class=sourcerecord>{}</tr>",
 "sourceheader" : "<tr class=sourceheaderrecord><th>Name</th><th>Onvif Address</th><th>Video Address</th><th>Record Duration</th><th>Disk Quota</th><th>Triggers</th><th></th></tr>",
 "sourcedata" : "<td>{}</td>",
+"sourcelink" : "<td><a href=\"videolist.html?source={1}\">{0}</a></td>",
 "sourcedeletebutton":"<td><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
 "sourcecheckboxes":"<input id=\"trigger_{}\" name=\"trigger_{}\" type=\"checkbox\">{}</br>",
 
@@ -17,5 +18,6 @@
 "configform":"<form action=\"configure\" method=\"get\"><table>{}</table></form>",
 
 "textrecord":"<tr><td><label for={0}>{1}</label></td><td><input id={0} name={0} value={2} {3}></td></tr>",
+"numberrecord":"<tr><td><label for={0}>{1}</label></td><td><input id={0} name={0} type=number value={2} {3}></td></tr>",
 "submitrecord":"<tr><td></td><td><input type=\"submit\"></td></tr>"
 }

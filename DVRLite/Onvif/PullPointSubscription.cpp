@@ -111,6 +111,7 @@ void PullPointSubscription::Uninit()
 
 void PullPointSubscription::Run()
 {
+	call();
 	while (running)
 	{
 		if (pullpoint.empty())

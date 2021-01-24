@@ -9,13 +9,21 @@
 #include "Source.h"
 #include "FFmpeg/FFmpeg.h"
 #include "PullPointSubscription.h"
+#include "Web/Utils.hpp"
 
 Onvif::Onvif() : dvrlite(nullptr){}
 
-Onvif::Onvif(DVRLite *dvrlite) : dvrlite(dvrlite)
+Onvif::Onvif(DVRLite *dvrlite)
 {
+	Init(dvrlite);
+}
+
+void Onvif::Init(DVRLite *dvrlite)
+{
+	this->dvrlite = dvrlite;
+	subscriptions.clear();
 	subscriptions.reserve(dvrlite->GetSources().size());
-	DVRLite::SourceSet &sources = dvrlite->GetSources();
+	DVRLite::SourceSet& sources = dvrlite->GetSources();
 	for (const Source& source : sources)
 	{
 		Add(source);
@@ -24,12 +32,10 @@ Onvif::Onvif(DVRLite *dvrlite) : dvrlite(dvrlite)
 
 void Onvif::Add(const Source &source)
 {
-	//FFmpeg* ffmpeg = dvrlite->GetFFmpeg(source);
-	subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [&]()
+	subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [source, this]()
 	{
 		for (const std::string& trigger : source.GetTriggers())
 		{
-			//TODO out filename
 			FFmpeg* ffmpeg = dvrlite->GetFFmpeg(trigger);
 			std::string recordPath = dvrlite->GetConfig().GetRecordPath();
 			if (!recordPath.empty())
@@ -37,12 +43,14 @@ void Onvif::Add(const Source &source)
 				std::filesystem::path directory = recordPath;
 				directory.append(source.GetName());
 				std::filesystem::create_directories(directory);
+				std::string filename = to_string(std::chrono::system_clock::now(), "%Y%m%d-%H:%M:%S.mp4");
 				if (ffmpeg)
-					ffmpeg->Record(std::chrono::seconds(source.GetDuration()), directory.string() + "/video.mp4");
+					ffmpeg->Record(std::chrono::seconds(source.GetDuration()), directory.string() + filename);
 			}
 		}
 		std::cout << "alert " << source.GetName() << "\n";
 	}));
+	subscriptions.back()->call();
 }
 void Onvif::Remove(const std::string &sourceName)
 {
@@ -53,10 +61,4 @@ void Onvif::Remove(const std::string &sourceName)
 		});
 	it->reset();
 	subscriptions.erase(it);
-
-	/*for (std::unique_ptr<PullPointSubscription> &subscription : subscriptions)
-	{
-		if (source == subscription.get()->source.GetName())
-			subscription.reset();
-	}*/
 }

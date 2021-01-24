@@ -18,6 +18,8 @@ public:
 	PullPointSubscription& operator=(const PullPointSubscription&) = delete;
 	PullPointSubscription& operator=(PullPointSubscription&&) = delete;
 
+	void call() { alert(); }
+
 	Source& source;
 private:
 	std::atomic_bool running;

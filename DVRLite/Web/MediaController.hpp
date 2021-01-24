@@ -141,8 +141,10 @@ public:
       {
           QueryParams queryParams = request->getQueryParameters();
           std::string recordPath = queryParams.get("recordPath")->std_str();
+          uint16_t port = std::stoul( queryParams.get("port")->std_str());
           DVRLite::Config &config = controller->dvrlite->GetConfig();
           config.SetRecordPath(recordPath);
+          config.SetPort(port);
           auto response = controller->createResponse(Status::CODE_302, "");
           response->putHeader("Location", "/");
           return _return(response);
@@ -194,7 +196,7 @@ public:
 
       ENDPOINT_ASYNC_INIT(Favicon)
 
-          Action act() override
+      Action act() override
       {
           auto range = request->getHeader(Header::RANGE);
           std::string webPath = controller->dvrlite->GetConfig().GetWebPath() + "favicon.png";
@@ -208,17 +210,25 @@ public:
   {
       ENDPOINT_ASYNC_INIT(Files)
 
-          Action act() override
+      Action act() override
       {
           std::string webPath = controller->dvrlite->GetConfig().GetWebPath();
           std::string filename = request->getPathTail()->std_str();
+          split_string(filename, '?', &filename, nullptr);
           std::string filepath = webPath + filename;
           if (std::filesystem::is_regular_file(filepath))
           {
               std::filesystem::path file(filename);
               file.replace_extension("");
+              oatpp::String sourcename = request->getQueryParameter("source");
               std::string content = loadFromFile(filepath.c_str())->std_str();
-              controller->ApplyTemplates(file.string(), content, Source());
+              if (sourcename.get() != nullptr)
+              {
+                  const Source &source = controller->dvrlite->GetSource(sourcename->std_str());
+                  controller->ApplyTemplates(file.string() + " " + sourcename->std_str(), content, source);
+              }
+              else
+                controller->ApplyTemplates(file.string(), content, Source());
               return _return(controller->createResponse(Status::CODE_200, content.c_str()));
           }
           else

@@ -9,11 +9,18 @@ class Onvif
 {
 public:
     Onvif();
+    Onvif(const Onvif&) = delete;
+    Onvif(const Onvif&&) = delete;
+    const Onvif& operator=(const Onvif&) = delete;
+    const Onvif& operator=(Onvif&&) = delete;
+    ~Onvif() = default;
     Onvif(DVRLite *dvrlite);
+
+    void Init(DVRLite *dvrlite);
 
     void Add(const Source &source);
     void Remove(const std::string& source);
-    //TODO mediacontroller needs to be able to add and remove pullpoints while it's running
+
 private:
     DVRLite const* dvrlite;
     std::vector<std::unique_ptr<PullPointSubscription>> subscriptions;
