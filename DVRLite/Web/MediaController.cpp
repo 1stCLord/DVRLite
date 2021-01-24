@@ -167,6 +167,8 @@ void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& 
         replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
     if (content.find("#configform#") != std::string::npos)
         replace_substring(content, "#configform#", CreateConfigList(), content);
+    if (content.find("#htmlheader#") != std::string::npos)
+        replace_substring(content, "#htmlheader#", templates["htmlheader"].asString(), content);
 }
 
 MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapper) :
@@ -176,7 +178,7 @@ MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapp
 
 void MediaController::LoadTemplates()
 {
-    std::string webPath = dvrlite->GetConfig().GetWebPath();
+    std::string webPath = dvrlite->GetConfig().GetWebPath(); 
     std::ifstream file(std::filesystem::path(webPath) / "templates.json");
     if (file.is_open())
     {
