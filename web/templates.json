@@ -13,7 +13,7 @@
 "sourcedeletebutton":"<td><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
 "sourcecheckboxes":"<input id=\"trigger_{}\" name=\"trigger_{}\" type=\"checkbox\">{}</br>",
 
-"videoelement":"<a href={}>{}</a><br>",
+"videoelement":"<a href={1}>{0}</a><br>",
 
 "configform":"<form action=\"configure\" method=\"get\"><table>{}</table></form>",
 

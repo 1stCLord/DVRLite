@@ -165,12 +165,14 @@ public:
         /*if (request->getConnection() != authconnection)
             return _return(controller->createResponse(Status::CODE_307, "login"));*/
 
-      auto filename = request->getPathTail();
-      OATPP_ASSERT_HTTP(filename, Status::CODE_400, "Filename is empty");
+      std::filesystem::path recordPath = controller->dvrlite->GetConfig().GetRecordPath();
+      std::filesystem::path filepath = request->getPathTail()->std_str();
+      //std::string filename = filepath.filename().string();
+      OATPP_ASSERT_HTTP(filepath.string().c_str(), Status::CODE_400, "Filename is empty");
 
       auto range = request->getHeader(Header::RANGE);
       
-      return _return(controller->getStaticFileResponse(filename, range));
+      return _return(controller->getStaticFileResponse( (recordPath / filepath).string().c_str(), range));
 
     }
     

@@ -113,7 +113,8 @@ std::string MediaController::CreateVideoList(const Source& source) const
         {
             if (entry.path().extension() == ".mp4")
             {
-                videolist += ApplyTemplate("videoelement", entry.path().filename().string());
+                std::vector<std::string> videoParameters{ entry.path().filename().string(), (std::filesystem::path("videos") / source.GetName() / entry.path().filename()).string() };
+                videolist += ApplyTemplate("videoelement", videoParameters);
             }
         }
     }
