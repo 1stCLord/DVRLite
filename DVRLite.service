@@ -1,0 +1,12 @@
+[Unit]
+Description=DVRLite
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/DVRLite
+
+Restart=on-failure
+
+
+[Install]
+WantedBy=multi-user.target
