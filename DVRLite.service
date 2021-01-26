@@ -4,6 +4,7 @@ Description=DVRLite
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/DVRLite
+WorkingDirectory=/usr/local/share/DVRLite
 
 Restart=on-failure
 

@@ -20,6 +20,7 @@ find_path(AVDEVICE_INCLUDE_DIR libavdevice/avdevice.h REQUIRED)
 find_library(AVDEVICE_LIBRARY avdevice REQUIRED)
 set(FFMPEG_INCLUDE_DIRS ${AVCODEC_INCLUDE_DIR} ${AVFORMAT_INCLUDE_DIR} ${AVUTIL_INCLUDE_DIR} ${AVDEVICE_INCLUDE_DIR})
 set(FFMPEG_LIBRARIES ${AVCODEC_LIBRARY} ${AVFORMAT_LIBRARY} ${AVUTIL_LIBRARY} ${AVDEVICE_LIBRARY})
+set(CMAKE_SYSTEMD_UNIT_DIR "/usr/lib/systemd/system")
 endif()
 
 # Add source to this project's executable.
@@ -36,4 +37,6 @@ target_compile_definitions(DVRLite PRIVATE WITH_OPENSSL=1, WITH_DOM=1 ${FFMPEG_D
 target_include_directories(DVRLite PRIVATE ${OPENSSL_INCLUDE_DIR} ${CMAKE_CURRENT_LIST_DIR} ${FFMPEG_INCLUDE_DIRS})
 target_link_libraries(DVRLite PRIVATE jsoncpp_lib oatpp::oatpp OpenSSL::SSL OpenSSL::Crypto ${FFMPEG_LIBRARIES})
 install(TARGETS DVRLite DESTINATION bin)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/web/ DESTINATION share/DVRLite/web)
+install(FILES ${CMAKE_SOURCE_DIR}/DVRLite.service DESTINATION ${CMAKE_SYSTEMD_UNIT_DIR})
 # TODO: Add tests and install targets if needed.
