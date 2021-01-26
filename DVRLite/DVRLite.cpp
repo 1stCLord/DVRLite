@@ -11,27 +11,13 @@ uint16_t DVRLite::Config::Port = 8000;
 
 int main(int argc, const char* argv[]) 
 {
-    //using namespace std::chrono_literals;
-    /*using namespace std::chrono_literals;
-    FFmpeg ffmpeg = FFmpeg("rtmp://192.168.0.75/bcs/channel0_main.bcs?channel=0&stream=0&user=admin&password=gibraltar", false, true);
-    ffmpeg.Record(10s, "video.mp4");
-    std::this_thread::sleep_for(8s);
-    ffmpeg.Record(10s, "video.mp4");
-    std::this_thread::sleep_for(8s);
-    ffmpeg.Record(14s, "video.mp4");*/
-
-    /*while(ffmpeg.IsRecording())
-        std::this_thread::sleep_for(1s);*/
     DVRLite dvrlite;
-    /*Source source = Source("name", "http://192.168.0.75:8000/onvif/device_service", 0, 0, std::unordered_set<std::string>());
-    PullPointSubscription pullpoint(source, []() {});
-    std::this_thread::sleep_for(1000s);*/
     MediaController::run(&dvrlite);
 
     return 0;
 }
 
-DVRLite::DVRLite() : config("config.json", "F:/Projects/DVRLite/web/", 8000)
+DVRLite::DVRLite() : config("config.json", "web/", 8000)
 {
     config.Load();
 
