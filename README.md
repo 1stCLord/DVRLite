@@ -7,3 +7,5 @@ This way it doesn't need to decode the video stream and writes it directly to di
 
 Use a web based UI to control the application, there's currently no authentication so using it on the open internet is not supported. 
 Via the web interface you can add/remove cameras, control the settings and view recorded video, there's currently no support for live video.
+
+![alt text](https://github.com/TheSombreroKid/DVRLite/blob/master/dvrlite.png?raw=true)
