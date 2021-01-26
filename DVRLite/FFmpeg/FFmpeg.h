@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 struct AVStream;
 struct AVFormatContext;
