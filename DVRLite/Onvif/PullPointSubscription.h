@@ -33,7 +33,8 @@ private:
 	void Run();
 
 	std::string Init();
-	void PullMessages();
+	bool PullMessages();
+	void Renew();
 	void Uninit();
 
 };

@@ -8,6 +8,10 @@
 #include "gsoap-onvif/DeviceBinding.nsmap"
 #include "DVRLite.h"
 
+#define PULL_DURATION "PT5S"
+#define SUBSCRIPTION_DURATION "PT5M"
+#define SECONDS_TO_RENEW 30
+
 PullPointSubscription::PullPointSubscription(Source& source, std::function<void(void)> alert) :
 	running(true),
 	alert(alert),
@@ -66,7 +70,7 @@ std::string PullPointSubscription::Init()
 
 		soap_wsse_add_UsernameTokenDigest(pullpointSubscriptionBindingProxy->soap, NULL, username.c_str(), password.c_str());
 		_tev__CreatePullPointSubscription createPullPointSubscription;
-		std::string initialTerminationTime = "PT60S";
+		std::string initialTerminationTime = SUBSCRIPTION_DURATION;
 		createPullPointSubscription.InitialTerminationTime = &initialTerminationTime;
 		_tev__CreatePullPointSubscriptionResponse createPullPointSubscriptionResponse;
 		pullpointSubscriptionBindingProxy->CreatePullPointSubscription(&createPullPointSubscription, createPullPointSubscriptionResponse);
@@ -82,17 +86,16 @@ std::string PullPointSubscription::Init()
 	return std::string();
 }
 
-void PullPointSubscription::PullMessages()
+bool PullPointSubscription::PullMessages()
 {
 	if (pullpointSubscriptionBindingProxy)
 	{
-		//DVRLite::Log("PullMessages " + source.GetName());
 		std::string username = source.GetUsername();
 		std::string password = source.GetPassword();
 
 		soap_wsse_add_UsernameTokenDigest(pullpointSubscriptionBindingProxy->soap, NULL, username.c_str(), password.c_str());
 		_tev__PullMessages pullMessages;
-		pullMessages.Timeout = "PT10S";
+		pullMessages.Timeout = PULL_DURATION;
 		pullMessages.MessageLimit = 1;
 		char* const pullpoint_ptr = pullpoint.data();
 		soap_wsa_request(pullpointSubscriptionBindingProxy->soap, nullptr, pullpoint.c_str(), "PullMessages");
@@ -100,7 +103,35 @@ void PullPointSubscription::PullMessages()
 		pullpointSubscriptionBindingProxy->PullMessages(pullpoint.c_str(), nullptr, &pullMessages, pullMessagesResponse);
 		if (!pullMessagesResponse.wsnt__NotificationMessage.empty())
 			alert();
+
+		if (pullMessagesResponse.TerminationTime - pullMessagesResponse.CurrentTime < SECONDS_TO_RENEW)
+		{
+			Renew();
+		}
+
+		if (pullMessagesResponse.soap->error != 0)
+		{
+			DVRLite::Log("Subscription Expired " + source.GetName());
+			return false;
+		}
+		else return true;
 	}
+}
+
+void PullPointSubscription::Renew()
+{
+	DVRLite::Log("Renew subscription " + source.GetName());
+
+	std::string username = source.GetUsername();
+	std::string password = source.GetPassword();
+	soap_wsse_add_UsernameTokenDigest(pullpointSubscriptionBindingProxy->soap, NULL, username.c_str(), password.c_str());
+
+	_wsnt__Renew renew;
+	std::string terminationTime = SUBSCRIPTION_DURATION;
+	renew.TerminationTime = &terminationTime;
+	soap_wsa_request(pullpointSubscriptionBindingProxy->soap, nullptr, pullpoint.c_str(), "Renew");
+	_wsnt__RenewResponse renewResponse;
+	pullpointSubscriptionBindingProxy->Renew(pullpoint.c_str(), nullptr, &renew, renewResponse);
 }
 
 void PullPointSubscription::Uninit()
@@ -122,7 +153,7 @@ void PullPointSubscription::Run()
 	{
 		if (pullpoint.empty())
 			pullpoint = Init();
-		PullMessages();
+		if (!PullMessages())pullpoint.clear();
 	}
 	Uninit();
 }
