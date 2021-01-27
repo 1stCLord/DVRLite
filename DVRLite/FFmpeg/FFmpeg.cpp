@@ -6,6 +6,9 @@ extern "C" {
 #include <libavutil/mathematics.h>
 }
 #include "DVRLite.h"
+#include <json/json.h>
+#include <fstream>
+#include "Web/Utils.hpp"
 
 FFmpeg::FFmpeg(const Source &source) : 
     source(source),
@@ -114,6 +117,16 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
     return true;
 }
 
+void FFmpeg::WriteMetadata(const std::filesystem::path &path, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const
+{
+    Json::Value json;
+    json["startTime"] = to_string(startTime, "%Y-%m-%d %H:%M:%S");
+    json["endTime"] = to_string(endTime, "%Y-%m-%d %H:%M:%S");
+    std::ofstream file(path);
+    if(file.is_open())
+        file << json;
+}
+
 bool FFmpeg::MapInput(RecordThreadContext& context, StreamMap& streamMap, AVStream *stream)
 {
     streamMap.in = stream;
@@ -165,6 +178,8 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
         return;
     }
 
+    std::chrono::system_clock::time_point startTime = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point actualEndTime;
     int frame_index = 0;
     AVPacket pkt;
     while (true) 
@@ -203,11 +218,13 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
         std::lock_guard lock(endMutex);
         if (std::chrono::system_clock::now() >= endTime)
         {
+            actualEndTime = endTime;
             isRecording = false;
             break;
         }
     }
     EndRecordThread(context);
+    WriteMetadata(std::filesystem::path(path).replace_extension(".json"), startTime, actualEndTime);
 
     return;
 }
@@ -227,4 +244,6 @@ void FFmpeg::EndRecordThread(RecordThreadContext& context) const
     }
 
     avformat_free_context(context.ofmt_ctx);
+
+
 }

@@ -15,7 +15,7 @@
 
 "videoelement":"<a href={1}>{0}</a><br>",
 "videotimeline":"<div id=\"visualization\"></div><script type=\"text/javascript\">var container = document.getElementById('visualization');var items = new vis.DataSet([{}]);var options = { };var timeline = new vis.Timeline(container, items, options);function action(properties){var item = items.get(properties.items[0]); window.open('videos/' + item.group + '/' + item.content);}timeline.on('select', action);</script>",
-"videotimelineelement":"{id: {0}, content: {1}, group:{2}, start:{3}}",
+"videotimelineelement":"{id: {0}, content: {1}, group:{2}, start:{3}, end:{4}}",
 
 "configform":"<form action=\"configure\" method=\"get\"><table>{}</table></form>",
 

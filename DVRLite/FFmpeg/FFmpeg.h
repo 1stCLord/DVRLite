@@ -46,11 +46,12 @@ private:
 	std::thread recordThread;
 	std::mutex endMutex;
 	std::atomic_bool isRecording;
-	std::chrono::time_point<std::chrono::system_clock> endTime;
+	std::chrono::system_clock::time_point endTime;
 
 	bool InitialiseRecordThread(const char * in_filename, const char* out_filename, RecordThreadContext& context) const;
 	void EndRecordThread(RecordThreadContext& context) const;
 	const StreamMap *GetStreamMap(const RecordThreadContext& context, int stream_index) const;
 	static bool MapInput(RecordThreadContext& context, StreamMap& streamMap, AVStream* stream);
 	void RecordThread(const std::filesystem::path& path);
+	void WriteMetadata(const std::filesystem::path& path, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const;
 };

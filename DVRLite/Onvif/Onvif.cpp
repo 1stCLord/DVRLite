@@ -56,6 +56,7 @@ void Onvif::Add(const Source &source)
 		}
 		//std::cout << "alert " << source.GetName() << "\n";
 	}));
+	subscriptions.back()->call();
 }
 void Onvif::Remove(const std::string &sourceName)
 {

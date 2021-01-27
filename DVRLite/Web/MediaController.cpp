@@ -131,15 +131,21 @@ std::string MediaController::CreateVideoTimeline(const Source& source) const
         int i = 1;
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
         {
-            if (entry.path().extension() == ".mp4")
+            if (entry.path().extension() == ".json")
             {
-                if (i > 1)
-                    videotimeline += ",";
+                std::ifstream file(entry.path());
+                if (file.is_open())
+                {
+                    if (i > 1)
+                        videotimeline += ",";
 
-                std::filesystem::path datetime = entry.path().filename();
-                datetime.replace_extension("");
-                std::vector<std::string> videoParameters{std::to_string(i++), '\'' + entry.path().filename().string() + '\'', '\'' + source.GetName() + '\'', '\'' + filename_to_datestring(datetime.string()) + '\''};
-                videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+                    std::filesystem::path videofile = entry.path().filename().replace_extension(".mp4");
+
+                    Json::Value json;
+                    file >> json;
+                    std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
+                    videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+                }
             }
         }
     }
