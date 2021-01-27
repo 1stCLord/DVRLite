@@ -82,7 +82,7 @@ void DVRLite::Log(const std::string& logline)
 {
     std::cout << logline << std::endl;
     if(logfile.is_open())
-        logfile << logline << std::endl;
+        logfile << to_string(std::chrono::system_clock::now(), "%Y%m%d-%H-%M-%S: ") + logline << std::endl;
 }
 
 DVRLite::Config::Config(const std::string& configPath, const std::string &webPath, uint16_t port) : 

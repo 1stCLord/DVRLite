@@ -92,7 +92,7 @@ void PullPointSubscription::PullMessages()
 
 		soap_wsse_add_UsernameTokenDigest(pullpointSubscriptionBindingProxy->soap, NULL, username.c_str(), password.c_str());
 		_tev__PullMessages pullMessages;
-		pullMessages.Timeout = "PT60S";
+		pullMessages.Timeout = "PT10S";
 		pullMessages.MessageLimit = 1;
 		char* const pullpoint_ptr = pullpoint.data();
 		soap_wsa_request(pullpointSubscriptionBindingProxy->soap, nullptr, pullpoint.c_str(), "PullMessages");
