@@ -47,7 +47,9 @@ Source::Source(const QueryParams& queryParams)
     String recordVideoString = queryParams.get("recordVideo");
     recordVideo = recordVideoString == "on";
 
-    DVRLite::Log("Source Created:\n " + source.asString());
+    std::stringstream jsonString;
+    jsonString << source;
+    DVRLite::Log("Source Created:\n " + jsonString.str());
 }
 
 void Source::Save(const std::filesystem::path& path) const
@@ -74,7 +76,9 @@ void Source::Save(const std::filesystem::path& path) const
     std::ofstream file(path);
     file << source;
 
-    DVRLite::Log("Source Saved:\n " + source.asString());
+    std::stringstream jsonString;
+    jsonString << source;
+    DVRLite::Log("Source Saved:\n " + jsonString.str());
 }
 
 void Source::Load(const std::filesystem::path& path)
@@ -98,7 +102,9 @@ void Source::Load(const std::filesystem::path& path)
         recordAudio = source["recordAudio"].asBool();
         recordVideo = source["recordVideo"].asBool();
 
-        DVRLite::Log("Source Loaded:\n " + source.asString());
+        std::stringstream jsonString;
+        jsonString << source;
+        DVRLite::Log("Config Loaded:\n " + jsonString.str());
     }
 }
 

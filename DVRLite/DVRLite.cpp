@@ -24,8 +24,8 @@ int main(int argc, const char* argv[])
 
 DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port) : config(configPath, webPath, port)
 {
-    config.Load();
     logfile = std::ofstream(std::filesystem::path(configPath).parent_path() / "log.txt");
+    config.Load();
 
     //load the sources
     if (std::filesystem::is_directory(config.GetSourcePath()))
@@ -110,7 +110,9 @@ void DVRLite::Config::Load()
             if (port != 0)
                 Port = port;
 
-            DVRLite::Log("Config Loaded:\n " + config.asString());
+            std::stringstream jsonString;
+            jsonString << config;
+            DVRLite::Log("Config Loaded:\n " + jsonString.str());
         }
     }
 }
@@ -128,7 +130,9 @@ void DVRLite::Config::Save() const
     std::ofstream file(configPath);
     file << source;
 
-    DVRLite::Log("Config Saved:\n " + source.asString());
+    std::stringstream jsonString;
+    jsonString << source;
+    DVRLite::Log("Config Saved:\n " + jsonString.str());
 }
 
 void DVRLite::Config::SetRecordPath(const std::string& recordPath)
