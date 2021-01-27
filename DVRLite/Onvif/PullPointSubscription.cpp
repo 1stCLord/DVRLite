@@ -10,7 +10,7 @@
 
 #define PULL_DURATION "PT5S"
 #define SUBSCRIPTION_DURATION "PT5M"
-#define SECONDS_TO_RENEW 30
+#define SECONDS_TO_RENEW 10
 
 PullPointSubscription::PullPointSubscription(Source& source, std::function<void(void)> alert) :
 	running(true),
@@ -104,17 +104,17 @@ bool PullPointSubscription::PullMessages()
 		if (!pullMessagesResponse.wsnt__NotificationMessage.empty())
 			alert();
 
-		if (pullMessagesResponse.TerminationTime - pullMessagesResponse.CurrentTime < SECONDS_TO_RENEW)
-		{
-			Renew();
-		}
-
-		if (pullMessagesResponse.soap->error != 0)
+		if (pullMessagesResponse.soap->error != SOAP_OK && pullMessagesResponse.soap->error != SOAP_MUSTUNDERSTAND)
 		{
 			DVRLite::Log("Subscription Expired " + source.GetName());
 			return false;
 		}
-		else return true;
+		else if (pullMessagesResponse.soap->error == SOAP_OK && (pullMessagesResponse.TerminationTime - pullMessagesResponse.CurrentTime) < SECONDS_TO_RENEW)
+		{
+			Renew();
+		}
+
+		return true;
 	}
 }
 
