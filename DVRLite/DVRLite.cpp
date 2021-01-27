@@ -83,19 +83,22 @@ DVRLite::Config::Config(const std::string& configPath, const std::string &webPat
 
 void DVRLite::Config::Load()
 {
-    std::ifstream file(configPath);
-    if (file.is_open())
+    if (std::filesystem::is_regular_file(configPath))
     {
-        Json::Value config;
-        file >> config;
+        std::ifstream file(configPath);
+        if (file.is_open())
+        {
+            Json::Value config;
+            file >> config;
 
-        std::lock_guard lock(configMutex);
-        std::string newRecordPath = config["recordPath"].asString();
-        if (!newRecordPath.empty())
-            recordPath = newRecordPath;
-        uint16_t port = config["port"].asUInt();
-        if (port!=0)
-            Port = port;
+            std::lock_guard lock(configMutex);
+            std::string newRecordPath = config["recordPath"].asString();
+            if (!newRecordPath.empty())
+                recordPath = newRecordPath;
+            uint16_t port = config["port"].asUInt();
+            if (port != 0)
+                Port = port;
+        }
     }
 }
 
