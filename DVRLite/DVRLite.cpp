@@ -11,9 +11,9 @@ uint16_t DVRLite::Config::Port = 8000;
 
 int main(int argc, const char* argv[]) 
 {
-    std::string configPath = argc >= 1 ? argv[0] : "config.json";
-    std::string webPath = argc >= 2 ? argv[1] : "web/";
-    uint16_t port = argc >= 3 ? std::stoi(argv[2]) : DVRLite::Config::Port;
+    std::string configPath = argc >= 2 ? argv[1] : "config.json";
+    std::string webPath = argc >= 3 ? argv[2] : "web/";
+    uint16_t port = argc >= 4 ? std::stoi(argv[3]) : DVRLite::Config::Port;
 
     DVRLite dvrlite = DVRLite(configPath, webPath, port);
     MediaController::run(&dvrlite);
