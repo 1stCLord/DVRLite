@@ -52,3 +52,7 @@ hr{border-top: 3px solid DarkSlateGrey;}
 {
 	background-color: lightgrey;
 }
+
+.vis-item .vis-item-overflow {
+  overflow: visible;
+}
