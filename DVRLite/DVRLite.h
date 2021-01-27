@@ -39,7 +39,7 @@ public:
 	using SourceSet = std::unordered_set <Source, Source::Hash>;
 
 
-	DVRLite();
+	DVRLite(const std::string& configPath = "config.json", const std::string& webPath = "web/", uint16_t port = 8000);
 
 	void AddSource(const Source &source);
 	void RemoveSource(const std::string& source);

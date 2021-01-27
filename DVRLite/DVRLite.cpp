@@ -11,13 +11,17 @@ uint16_t DVRLite::Config::Port = 8000;
 
 int main(int argc, const char* argv[]) 
 {
-    DVRLite dvrlite;
+    std::string configPath = argc >= 1 ? argv[0] : "config.json";
+    std::string webPath = argc >= 2 ? argv[1] : "web/";
+    uint16_t port = argc >= 3 ? std::stoi(argv[2]) : DVRLite::Config::Port;
+
+    DVRLite dvrlite = DVRLite(configPath, webPath, port);
     MediaController::run(&dvrlite);
 
     return 0;
 }
 
-DVRLite::DVRLite() : config("config.json", "web/", 8000)
+DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port) : config(configPath, webPath, port)
 {
     config.Load();
 

@@ -3,8 +3,7 @@ Description=DVRLite
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/DVRLite
-WorkingDirectory=/usr/local/share/DVRLite
+ExecStart=/usr/local/bin/DVRLite /var/DVRLite/config.json /usr/local/share/DVRLite/web
 
 Restart=on-failure
 
