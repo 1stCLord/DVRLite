@@ -116,6 +116,7 @@ bool PullPointSubscription::PullMessages()
 
 		return true;
 	}
+	return false;
 }
 
 void PullPointSubscription::Renew()
