@@ -42,9 +42,9 @@ Source::Source(const QueryParams& queryParams)
     std::string quotaString = queryParams.get("quota")->std_str();
     quota = quotaString.empty() ? 0 : std::stoi(quotaString);
     String recordAudioString = queryParams.get("recordAudio");
-    recordAudio = recordAudioString == "true";
+    recordAudio = recordAudioString == "on";
     String recordVideoString = queryParams.get("recordVideo");
-    recordVideo = recordVideoString == "true";
+    recordVideo = recordVideoString == "on";
 }
 
 void Source::Save(const std::filesystem::path& path) const
