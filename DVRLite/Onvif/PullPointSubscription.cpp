@@ -86,7 +86,7 @@ void PullPointSubscription::PullMessages()
 {
 	if (pullpointSubscriptionBindingProxy)
 	{
-		DVRLite::Log("PullMessages " + source.GetName());
+		//DVRLite::Log("PullMessages " + source.GetName());
 		std::string username = source.GetUsername();
 		std::string password = source.GetPassword();
 

@@ -172,6 +172,7 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
         // Get an AVPacket
         if (av_read_frame(context.ifmt_ctx, &pkt) < 0) 
         {
+            DVRLite::Log("Record Bad Read");
             //isRecording = false;
             continue;
         }
@@ -192,10 +193,9 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
             if (av_interleaved_write_frame(context.ofmt_ctx, &pkt) < 0)
             {
                 DVRLite::Log("Error muxing packet.");
-                isRecording = false;
-                break;
+                continue;
             }
-            DVRLite::Log(std::string("Write ") + std::to_string(frame_index) + " frames to output file\n");
+            //DVRLite::Log(std::string("Write ") + std::to_string(frame_index) + " frames to output file\n");
             av_free_packet(&pkt);
             frame_index++;
         }
