@@ -144,7 +144,7 @@ public:
           std::string recordPath = queryParams.get("recordPath")->std_str();
           uint16_t port = std::stoul( queryParams.get("port")->std_str());
           DVRLite::Config &config = controller->dvrlite->GetConfig();
-          config.SetRecordPath(recordPath);
+          config.SetRecordPath(unescapeUrl(recordPath));
           config.SetPort(port);
           auto response = controller->createResponse(Status::CODE_302, "");
           response->putHeader("Location", "/");
