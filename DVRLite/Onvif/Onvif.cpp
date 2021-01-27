@@ -35,6 +35,7 @@ void Onvif::Add(const Source &source)
 	DVRLite::Log("Onvif Adding " + source.GetName());
 	subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [source, this]()
 	{
+		DVRLite::Log("Alert " + source.GetName());
 		for (const std::string& trigger : source.GetTriggers())
 		{
 			FFmpeg* ffmpeg = dvrlite->GetFFmpeg(trigger);
@@ -47,9 +48,13 @@ void Onvif::Add(const Source &source)
 				std::string filename = to_string(std::chrono::system_clock::now(), "%Y%m%d-%H-%M-%S.mp4");
 				if (ffmpeg)
 					ffmpeg->Record(std::chrono::seconds(source.GetDuration()), std::filesystem::path(directory.string()) / filename);
+				else
+					DVRLite::Log("No FFmpeg instance found " + source.GetName());
 			}
+			else
+				DVRLite::Log("Record Path Empty");
 		}
-		std::cout << "alert " << source.GetName() << "\n";
+		//std::cout << "alert " << source.GetName() << "\n";
 	}));
 }
 void Onvif::Remove(const std::string &sourceName)
