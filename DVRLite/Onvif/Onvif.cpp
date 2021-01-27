@@ -32,6 +32,7 @@ void Onvif::Init(DVRLite *dvrlite)
 
 void Onvif::Add(const Source &source)
 {
+	DVRLite::Log("Onvif Adding " + source.GetName());
 	subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [source, this]()
 	{
 		for (const std::string& trigger : source.GetTriggers())
@@ -53,6 +54,7 @@ void Onvif::Add(const Source &source)
 }
 void Onvif::Remove(const std::string &sourceName)
 {
+	DVRLite::Log("Onvif Removing " + sourceName);
 	std::vector<std::unique_ptr<PullPointSubscription>>::iterator it = std::find_if(subscriptions.begin(), subscriptions.end(),
 		[&](std::unique_ptr<PullPointSubscription>& pullpoint) 
 		{

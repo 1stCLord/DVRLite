@@ -8,6 +8,7 @@
 #include <fstream>
 
 uint16_t DVRLite::Config::Port = 8000;
+std::ofstream DVRLite::logfile;
 
 int main(int argc, const char* argv[]) 
 {
@@ -24,6 +25,7 @@ int main(int argc, const char* argv[])
 DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port) : config(configPath, webPath, port)
 {
     config.Load();
+    logfile = std::ofstream(std::filesystem::path(configPath).parent_path() / "log.txt");
 
     //load the sources
     if (std::filesystem::is_directory(config.GetSourcePath()))
@@ -45,6 +47,7 @@ DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint
 
 void DVRLite::AddSource(const Source &source)
 {
+    Log("Adding source " + source.GetUsername());
     std::pair<SourceSet::iterator, bool> result = sources.insert(source);
     const Source& ourSource = *(result.first);
     ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(ourSource);
@@ -54,6 +57,7 @@ void DVRLite::AddSource(const Source &source)
 
 void DVRLite::RemoveSource(const std::string& sourceName)
 {
+    Log("Removing source " + sourceName);
     ffmpegs[sourceName].reset();
     onvif.Remove(sourceName);
     sources.erase(std::find_if(sources.begin(), sources.end(), [&](const Source& source) {return source.GetName() == sourceName; }));
@@ -72,6 +76,13 @@ DVRLite::Config& DVRLite::GetConfig()
 const DVRLite::Config& DVRLite::GetConfig() const
 {
     return config;
+}
+
+void DVRLite::Log(const std::string& logline)
+{
+    std::cout << logline << '\n';
+    if(logfile.is_open())
+        logfile << logline << '\n';
 }
 
 DVRLite::Config::Config(const std::string& configPath, const std::string &webPath, uint16_t port) : 
@@ -98,6 +109,8 @@ void DVRLite::Config::Load()
             uint16_t port = config["port"].asUInt();
             if (port != 0)
                 Port = port;
+
+            DVRLite::Log("Config Loaded:\n " + config.asString());
         }
     }
 }
@@ -114,6 +127,8 @@ void DVRLite::Config::Save() const
     std::filesystem::create_directories(fullpath.parent_path());
     std::ofstream file(configPath);
     file << source;
+
+    DVRLite::Log("Config Saved:\n " + source.asString());
 }
 
 void DVRLite::Config::SetRecordPath(const std::string& recordPath)

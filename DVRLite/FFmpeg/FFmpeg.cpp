@@ -5,7 +5,7 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/mathematics.h>
 }
-#define LOG(...) printf(__VA_ARGS__)
+#include "DVRLite.h"
 
 FFmpeg::FFmpeg(const Source &source) : 
     source(source),
@@ -26,6 +26,7 @@ void FFmpeg::Record(std::chrono::seconds duration, const std::filesystem::path& 
     std::lock_guard lock(endMutex);
     if (!isRecording)
     {
+        DVRLite::Log("Begin Record " + source.GetName());
         if(recordThread.joinable())
             recordThread.join();
         isRecording = true;
@@ -33,7 +34,10 @@ void FFmpeg::Record(std::chrono::seconds duration, const std::filesystem::path& 
         recordThread = std::thread(&FFmpeg::RecordThread, this, path);
     }
     else
+    {
+        DVRLite::Log("Extend Record " + source.GetName());
         endTime = std::chrono::system_clock::now() + duration;
+    }
 }
 
 bool FFmpeg::IsRecording() const
@@ -46,7 +50,7 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
     avformat_open_input(&context.ifmt_ctx, in_filename, NULL, NULL);
     if (avformat_find_stream_info(context.ifmt_ctx, 0) < 0)
     {
-        LOG("Retrieve input stream info failed.");
+        DVRLite::Log("Retrieve input stream info failed.");
         return false;
     }
 
@@ -56,7 +60,7 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
     avformat_alloc_output_context2(&context.ofmt_ctx, NULL, NULL, out_filename);
     if (!context.ofmt_ctx)
     {
-        LOG("Create output context failed.");
+        DVRLite::Log("Create output context failed.");
         return false;
     }
 
@@ -96,7 +100,7 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
     {
         if (avio_open(&context.ofmt_ctx->pb, out_filename, AVIO_FLAG_WRITE) < 0)
         {
-            LOG("Open output file '%s' failed.", out_filename);
+            DVRLite::Log(std::string("Open output file ") + out_filename + " failed.");
             return false;
         }
     }
@@ -104,7 +108,7 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
     // Write file header
     if (avformat_write_header(context.ofmt_ctx, NULL) < 0)
     {
-        LOG("Error occurred when opening output file.");
+        DVRLite::Log("Error occurred when opening output file.");
         return false;
     }
     return true;
@@ -117,14 +121,14 @@ bool FFmpeg::MapInput(RecordThreadContext& context, StreamMap& streamMap, AVStre
 
     if (!streamMap.out)
     {
-        LOG("Allocate output stream failed.");
+        DVRLite::Log("Allocate output stream failed.");
         return false;
     }
 
     // Copy the settings of AVCodecContext
     if (avcodec_copy_context(streamMap.out->codec, streamMap.in->codec) < 0)
     {
-        LOG("Failed to copy context from input to output stream codec context.");
+        DVRLite::Log("Failed to copy context from input to output stream codec context.");
         return false;
     }
 
@@ -147,6 +151,7 @@ const StreamMap *FFmpeg::GetStreamMap(const RecordThreadContext &context, int st
 
 void FFmpeg::RecordThread(const std::filesystem::path& path)
 {
+    DVRLite::Log("RecordThread Begin " + source.GetName());
     std::string out_path = path.string();
     const char* out_filename = out_path.c_str();
     std::string videoAddress = source.GetVideoAddress();
@@ -155,6 +160,7 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
     RecordThreadContext context;
     if (!InitialiseRecordThread(in_filename, out_filename, context))
     {
+        DVRLite::Log("Initialise Record Failed " + source.GetName());
         isRecording = false;
         return;
     }
@@ -185,11 +191,11 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
             // Write
             if (av_interleaved_write_frame(context.ofmt_ctx, &pkt) < 0)
             {
-                LOG("Error muxing packet.");
+                DVRLite::Log("Error muxing packet.");
                 isRecording = false;
                 break;
             }
-            LOG("Write %8d frames to output file\n", frame_index);
+            DVRLite::Log(std::string("Write ") + std::to_string(frame_index) + " frames to output file\n");
             av_free_packet(&pkt);
             frame_index++;
         }
@@ -208,6 +214,7 @@ void FFmpeg::RecordThread(const std::filesystem::path& path)
 
 void FFmpeg::EndRecordThread(RecordThreadContext& context) const
 {
+    DVRLite::Log("End record" + source.GetName());
     // Write file trailer
     av_write_trailer(context.ofmt_ctx);
 

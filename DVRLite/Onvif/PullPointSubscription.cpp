@@ -6,6 +6,7 @@
 #include "gsoap-onvif/soapDeviceBindingProxy.h"
 #include "gsoap-onvif/soapMediaBindingProxy.h"
 #include "gsoap-onvif/DeviceBinding.nsmap"
+#include "DVRLite.h"
 
 PullPointSubscription::PullPointSubscription(Source& source, std::function<void(void)> alert) :
 	running(true),
@@ -24,6 +25,8 @@ PullPointSubscription::~PullPointSubscription()
 
 std::string PullPointSubscription::Init() 
 {
+	DVRLite::Log("Initialise PullPointSubscription " + source.GetName());
+
 	std::string endpoint = source.GetOnvifAddress();
 	std::string username = source.GetUsername();
 	std::string password = source.GetPassword();
@@ -44,6 +47,7 @@ std::string PullPointSubscription::Init()
 
 	if (capabilitiesResponse.Capabilities)
 	{
+		DVRLite::Log("PullPointSubscription Got Caps " + source.GetName());
 		MediaBindingProxy mediaBinding = MediaBindingProxy(capabilitiesResponse.Capabilities->Media->XAddr.c_str());
 		soap_wsse_add_UsernameTokenDigest(mediaBinding.soap, NULL, username.c_str(), password.c_str());
 		soap_register_plugin(mediaBinding.soap, soap_wsse);
@@ -71,6 +75,7 @@ std::string PullPointSubscription::Init()
 			const int prefixlen = strlen("<wsa5:Address>");
 			int len = strlen(createPullPointSubscriptionResponse.SubscriptionReference.__any[0]) - ((2 * prefixlen) + 1);
 			std::string pullpoint(createPullPointSubscriptionResponse.SubscriptionReference.__any[0] + prefixlen, len);
+			DVRLite::Log("Initialise PullPointSubscription Got Subscription Address " + source.GetName() + " " + pullpoint);
 			return pullpoint;
 		}
 	}
@@ -81,6 +86,7 @@ void PullPointSubscription::PullMessages()
 {
 	if (pullpointSubscriptionBindingProxy)
 	{
+		DVRLite::Log("PullMessages " + source.GetName());
 		std::string username = source.GetUsername();
 		std::string password = source.GetPassword();
 
@@ -99,6 +105,7 @@ void PullPointSubscription::PullMessages()
 
 void PullPointSubscription::Uninit()
 {
+	DVRLite::Log("Uninitialise PullPointSubscription " + source.GetName());
 	std::string username = source.GetUsername();
 	std::string password = source.GetPassword();
 

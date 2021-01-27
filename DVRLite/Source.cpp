@@ -4,6 +4,7 @@
 #include <fstream>
 #include <functional>
 #include "Web/Utils.hpp"
+#include "DVRLite.h"
 
 Source::Source(const QueryParams& queryParams)
 {
@@ -45,6 +46,8 @@ Source::Source(const QueryParams& queryParams)
     recordAudio = recordAudioString == "on";
     String recordVideoString = queryParams.get("recordVideo");
     recordVideo = recordVideoString == "on";
+
+    DVRLite::Log("Source Created:\n " + source.asString());
 }
 
 void Source::Save(const std::filesystem::path& path) const
@@ -70,6 +73,8 @@ void Source::Save(const std::filesystem::path& path) const
     std::filesystem::create_directories(fullpath.parent_path());
     std::ofstream file(path);
     file << source;
+
+    DVRLite::Log("Source Saved:\n " + source.asString());
 }
 
 void Source::Load(const std::filesystem::path& path)
@@ -92,6 +97,8 @@ void Source::Load(const std::filesystem::path& path)
         quota = source["quota"].asUInt();
         recordAudio = source["recordAudio"].asBool();
         recordVideo = source["recordVideo"].asBool();
+
+        DVRLite::Log("Source Loaded:\n " + source.asString());
     }
 }
 

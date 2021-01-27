@@ -53,6 +53,8 @@ public:
 
 	Config& GetConfig();
 	const Config& GetConfig() const;
+
+	static void Log(const std::string& logline);
 private:
 
 	SourceSet sources;
@@ -60,4 +62,6 @@ private:
 
 	Config config;
 	Onvif onvif;
+
+	static std::ofstream logfile;
 };
