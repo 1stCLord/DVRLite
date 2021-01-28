@@ -31,11 +31,11 @@ private:
   std::string CreateSourceList() const;
   std::string CreateVideoList(const Source &source) const;
   std::string CreateVideoSnapshot(const Source& source) const;
-  std::string CreateVideoTimeline(const Source& source) const;
+  std::string CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
   std::string CreateSourceCheckboxes() const;
   std::string CreateConfigList() const;
 
-  void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource) const;
+  void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const;
   std::string ApplyTemplate(const std::string& templatename, const std::string& value) const;
   std::string ApplyTemplate(const std::string& templatename, const std::vector<std::string>& value) const;
 
@@ -46,6 +46,8 @@ public:
 
   void setDVR(DVRLite* dvrlite) { this->dvrlite = dvrlite; }
   void LoadTemplates();
+
+  static void GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime);
 public:
 
   /**
@@ -77,7 +79,8 @@ public:
           std::string webPath = controller->dvrlite->GetConfig().GetWebPath();
           std::string filepath = webPath + "sourcelist.html";
           std::string content = loadFromFile(filepath.c_str())->std_str();
-          controller->ApplyTemplates("Sources", content, Source());
+          std::chrono::system_clock::time_point startTime, endTime;
+          controller->ApplyTemplates("Sources", content, Source(), startTime, endTime);
           //replace_substring(content, "#sourcelist#", controller->CreateSourceList(), content);
 
           return _return(controller->createResponse(Status::CODE_200, content.c_str()));
@@ -224,15 +227,19 @@ public:
           {
               std::filesystem::path file(filename);
               file.replace_extension("");
+
+              std::chrono::system_clock::time_point startTime, endTime;
+              MediaController::GetTimes(request->getQueryParameter("startTime"), request->getQueryParameter("endTime"), startTime, endTime);
+
               oatpp::String sourcename = request->getQueryParameter("source");
               std::string content = loadFromFile(filepath.c_str())->std_str();
               if (sourcename.get() != nullptr)
               {
                   const Source &source = controller->dvrlite->GetSource(sourcename->std_str());
-                  controller->ApplyTemplates(file.string() + " " + sourcename->std_str(), content, source);
+                  controller->ApplyTemplates(file.string() + " " + sourcename->std_str(), content, source, startTime, endTime);
               }
               else
-                controller->ApplyTemplates(file.string(), content, Source());
+                controller->ApplyTemplates(file.string(), content, Source(), startTime, endTime);
               return _return(controller->createResponse(Status::CODE_200, content.c_str()));
           }
           else

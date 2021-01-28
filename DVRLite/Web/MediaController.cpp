@@ -126,7 +126,7 @@ std::string MediaController::CreateVideoSnapshot(const Source& source) const
     return ApplyTemplate("videosnapshot", source.GetAuthSnapshotAddress());
 }
 
-std::string MediaController::CreateVideoTimeline(const Source& source) const
+std::string MediaController::CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
 {
     std::string videotimeline;
     std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
@@ -141,15 +141,20 @@ std::string MediaController::CreateVideoTimeline(const Source& source) const
                 std::ifstream file(entry.path());
                 if (file.is_open())
                 {
-                    if (i > 1)
-                        videotimeline += ",";
-
-                    std::filesystem::path videofile = entry.path().filename().replace_extension(".mp4");
-
                     Json::Value json;
                     file >> json;
-                    std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
-                    videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+                    std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
+                    std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                    if (endTimepoint > from && startTimepoint < to)
+                    {
+                        if (i > 1)
+                            videotimeline += ",";
+
+                        std::filesystem::path videofile = entry.path().filename().replace_extension(".mp4");
+
+                        std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
+                        videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+                    }
                 }
             }
         }
@@ -200,7 +205,7 @@ std::string MediaController::ApplyTemplate(const std::string& templatename, cons
     return result;
 }
 
-void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& content, const Source &currentSource) const
+void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& content, const Source &currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const
 {
     if (content.find("#header#") != std::string::npos)
         replace_substring(content, "#header#", CreateHeader(pageTitle), content);
@@ -211,7 +216,7 @@ void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& 
     if (content.find("#videosnapshot#") != std::string::npos)
         replace_substring(content, "#videosnapshot#", CreateVideoSnapshot(currentSource), content);
     if (content.find("#videotimeline#") != std::string::npos)
-        replace_substring(content, "#videotimeline#", CreateVideoTimeline(currentSource), content);
+        replace_substring(content, "#videotimeline#", CreateVideoTimeline(currentSource, startTime, endTime), content);
     if (content.find("#sourcecheckboxes#") != std::string::npos)
         replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
     if (content.find("#configform#") != std::string::npos)
@@ -232,6 +237,30 @@ void MediaController::LoadTemplates()
     if (file.is_open())
     {
         file >> templates;
+    }
+}
+
+void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime)
+{
+    if (inStartTime.get() == nullptr && inEndTime.get() == nullptr)
+    {
+        startTime = std::chrono::system_clock::now() - std::chrono::hours(24);
+        endTime = std::chrono::system_clock::now();
+    }
+    else if (inStartTime.get() == nullptr)
+    {
+        endTime = to_timepoint(inEndTime->std_str(), DATESTRINGFORMAT);
+        startTime = endTime - std::chrono::hours(24);
+    }
+    else if (inEndTime.get() == nullptr)
+    {
+        startTime = to_timepoint(inStartTime->std_str(), DATESTRINGFORMAT);
+        endTime = startTime + std::chrono::hours(24);
+    }
+    else
+    {
+        startTime = to_timepoint(inStartTime->std_str(), DATESTRINGFORMAT);
+        endTime = to_timepoint(inEndTime->std_str(), DATESTRINGFORMAT);
     }
 }
 

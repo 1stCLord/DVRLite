@@ -120,8 +120,8 @@ bool FFmpeg::InitialiseRecordThread(const char* in_filename, const char* out_fil
 void FFmpeg::WriteMetadata(const std::filesystem::path &path, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const
 {
     Json::Value json;
-    json["startTime"] = to_string(startTime, "%Y-%m-%d %H:%M:%S");
-    json["endTime"] = to_string(endTime, "%Y-%m-%d %H:%M:%S");
+    json["startTime"] = to_string(startTime, DATESTRINGFORMAT);
+    json["endTime"] = to_string(endTime, DATESTRINGFORMAT);
     std::ofstream file(path);
     if(file.is_open())
         file << json;

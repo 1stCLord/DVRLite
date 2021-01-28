@@ -13,7 +13,7 @@ std::ofstream DVRLite::logfile;
 int main(int argc, const char* argv[]) 
 {
     std::string configPath = argc >= 2 ? argv[1] : "config.json";
-    std::string webPath = argc >= 3 ? argv[2] : "web/";
+    std::string webPath = argc >= 3 ? argv[2] : "../../../../web/";
     uint16_t port = argc >= 4 ? std::stoi(argv[3]) : DVRLite::Config::Port;
 
     DVRLite dvrlite = DVRLite(configPath, webPath, port);
@@ -80,7 +80,7 @@ const DVRLite::Config& DVRLite::GetConfig() const
 
 void DVRLite::Log(const std::string& logline)
 {
-    std::string tsLogline = to_string(std::chrono::system_clock::now(), "%Y%m%d-%H-%M-%S: ") + logline;
+    std::string tsLogline = to_string(std::chrono::system_clock::now(), std::string(DATESTRINGFORMAT) + ": ") + logline;
     std::cout << tsLogline << std::endl;
     if(logfile.is_open())
         logfile << tsLogline << std::endl;

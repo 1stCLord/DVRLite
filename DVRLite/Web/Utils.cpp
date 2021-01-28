@@ -195,6 +195,13 @@ std::string to_string(std::chrono::system_clock::time_point time, const std::str
     return ss.str();
 }
 
+std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format)
+{
+    std::tm tm;
+    std::stringstream(timeString) >> std::get_time(&tm, format.c_str());
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
 //video filename format yyyymmdd-hh-mm-ss
 std::string filename_to_datestring(const std::string& filename)
 {

@@ -45,7 +45,7 @@ void Onvif::Add(const Source &source)
 				std::filesystem::path directory = recordPath;
 				directory.append(source.GetName());
 				std::filesystem::create_directories(directory);
-				std::string filename = to_string(std::chrono::system_clock::now(), "%Y%m%d-%H-%M-%S.mp4");
+				std::string filename = to_string(std::chrono::system_clock::now(), std::string(DATEFILEFORMAT) + ".mp4");
 				if (ffmpeg)
 					ffmpeg->Record(std::chrono::seconds(source.GetDuration()), std::filesystem::path(directory.string()) / filename);
 				else
@@ -55,7 +55,7 @@ void Onvif::Add(const Source &source)
 				DVRLite::Log("Record Path Empty");
 		}
 	}));
-	//subscriptions.back()->call();
+	subscriptions.back()->call();
 }
 void Onvif::Remove(const std::string &sourceName)
 {
