@@ -61,6 +61,15 @@ std::string PullPointSubscription::Init()
 		if(getStreamUriResponse.MediaUri)
 			source.SetOnvifVideoAddress(getStreamUriResponse.MediaUri->Uri);
 
+
+
+		soap_wsse_add_UsernameTokenDigest(mediaBinding.soap, NULL, username.c_str(), password.c_str());
+		_trt__GetSnapshotUri getSnapshotUri;
+		_trt__GetSnapshotUriResponse getSnapshotUriResponse;
+		mediaBinding.GetSnapshotUri(&getSnapshotUri, getSnapshotUriResponse);
+		if (getSnapshotUriResponse.MediaUri)
+			source.SetOnvifSnapshotAddress(getSnapshotUriResponse.MediaUri->Uri);
+
 		pullpointSubscriptionBindingProxy = std::unique_ptr<PullPointSubscriptionBindingProxy>(new PullPointSubscriptionBindingProxy(capabilitiesResponse.Capabilities->Events->XAddr.c_str()));
 		soap_wsse_add_UsernameTokenDigest(pullpointSubscriptionBindingProxy->soap, NULL, username.c_str(), password.c_str());
 		soap_register_plugin(pullpointSubscriptionBindingProxy->soap, soap_wsse);

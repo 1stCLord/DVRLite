@@ -123,7 +123,19 @@ std::string Source::GetOnvifAddress()const
 std::string Source::GetVideoAddress() const
 {
     std::lock_guard lock(sourceMutex);
-    return customVideoAddress.empty() ? onvifAddress : customVideoAddress;
+    return customVideoAddress.empty() ? onvifVideoAddress : customVideoAddress;
+}
+
+std::string Source::GetSnapshotAddress() const
+{
+    std::lock_guard lock(sourceMutex);
+    return onvifSnapshotAddress;
+}
+
+std::string Source::GetAuthSnapshotAddress() const
+{
+    std::lock_guard lock(sourceMutex);
+    return replace_substring(onvifSnapshotAddress, "://", "://" + username + ':' + password + '@');
 }
 
 std::string Source::GetUsername()const
@@ -166,6 +178,12 @@ void Source::SetOnvifVideoAddress(std::string& address)
 {
     std::lock_guard lock(sourceMutex);
     onvifVideoAddress = address;
+}
+
+void Source::SetOnvifSnapshotAddress(std::string& address)
+{
+    std::lock_guard lock(sourceMutex);
+    onvifSnapshotAddress = address;
 }
 
 std::unordered_set<std::string> Source::GetTriggers() const

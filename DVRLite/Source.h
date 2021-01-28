@@ -11,6 +11,7 @@ private:
 	std::string name;
 	std::string onvifAddress;
 	std::string onvifVideoAddress;
+	std::string onvifSnapshotAddress;
 	std::string customVideoAddress;
 	std::string username;
 	std::string password;
@@ -41,6 +42,7 @@ public:
 		name(other.name),
 		onvifAddress(other.onvifAddress),
 		onvifVideoAddress(other.onvifVideoAddress),
+		onvifSnapshotAddress(other.onvifSnapshotAddress),
 		customVideoAddress(other.customVideoAddress),
 		username(other.username),
 		password(other.password),
@@ -57,10 +59,13 @@ public:
 	void Load(const std::filesystem::path& path);
 
 	void SetOnvifVideoAddress(std::string& address);
+	void SetOnvifSnapshotAddress(std::string& address);
 
 	std::string GetName() const;
 	std::string GetOnvifAddress()const;
 	std::string GetVideoAddress()const;
+	std::string GetSnapshotAddress()const;
+	std::string GetAuthSnapshotAddress()const;
 	std::string GetUsername()const;
 	std::string GetPassword()const;
 	uint16_t GetDuration()const;

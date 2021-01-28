@@ -30,6 +30,7 @@ private:
   std::string CreateHeader(const std::string &pageTitle) const;
   std::string CreateSourceList() const;
   std::string CreateVideoList(const Source &source) const;
+  std::string CreateVideoSnapshot(const Source& source) const;
   std::string CreateVideoTimeline(const Source& source) const;
   std::string CreateSourceCheckboxes() const;
   std::string CreateConfigList() const;

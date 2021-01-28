@@ -121,6 +121,11 @@ std::string MediaController::CreateVideoList(const Source& source) const
     return videolist;
 }
 
+std::string MediaController::CreateVideoSnapshot(const Source& source) const
+{
+    return ApplyTemplate("videosnapshot", source.GetAuthSnapshotAddress());
+}
+
 std::string MediaController::CreateVideoTimeline(const Source& source) const
 {
     std::string videotimeline;
@@ -203,6 +208,8 @@ void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& 
         replace_substring(content, "#sourcelist#", CreateSourceList(), content);
     if (content.find("#videolist#") != std::string::npos)
         replace_substring(content, "#videolist#", CreateVideoList(currentSource), content);
+    if (content.find("#videosnapshot#") != std::string::npos)
+        replace_substring(content, "#videosnapshot#", CreateVideoSnapshot(currentSource), content);
     if (content.find("#videotimeline#") != std::string::npos)
         replace_substring(content, "#videotimeline#", CreateVideoTimeline(currentSource), content);
     if (content.find("#sourcecheckboxes#") != std::string::npos)
