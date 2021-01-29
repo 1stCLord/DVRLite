@@ -131,6 +131,7 @@ std::string MediaController::CreateVideoTimeline(const Source& source, std::chro
     std::string videotimeline;
     std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
     videoDirectory = videoDirectory / source.GetName();
+    int groupIndex = 0;
     if (std::filesystem::is_directory(videoDirectory))
     {
         int i = 1;
@@ -151,15 +152,17 @@ std::string MediaController::CreateVideoTimeline(const Source& source, std::chro
                             videotimeline += ",";
 
                         std::filesystem::path videofile = entry.path().filename().replace_extension(".mp4");
-
-                        std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
+                        std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
                         videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
                     }
                 }
             }
         }
     }
-    return ApplyTemplate("videotimeline", videotimeline);
+    std::vector<std::string> groupParameters{ std::to_string(groupIndex), '\'' + source.GetName() + '\''};
+    std::string videoGroups = ApplyTemplate("videotimelinegroup", groupParameters);
+    std::vector<std::string> timelineParameters{ videotimeline, videoGroups };
+    return ApplyTemplate("videotimeline", timelineParameters);
 }
 
 std::string MediaController::CreateSourceCheckboxes() const
