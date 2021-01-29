@@ -15,7 +15,7 @@
 
 "videosnapshot":"<img style=\"width:60%;display:block;margin-left:auto;margin-right:auto\" src=\"{}\"><br>",
 "videoelement":"<a href={1}>{0}</a><br>",
-"videotimeline":"<div id=\"visualization\"></div><script type=\"text/javascript\">var container = document.getElementById('visualization');var items = new vis.DataSet([{0}]);var options = {stack:false };var groups=[{1}];var timeline = new vis.Timeline(container, items, options, groups);function action(properties){var item = items.get(properties.items[0]); window.open('videos/' + item.source + '/' + item.video);}timeline.on('select', action);</script>",
+"videotimeline":"<div id=\"visualization\"></div><script type=\"text/javascript\" src=\"timeline.js\"></script><script type=\"text/javascript\">var items = new vis.DataSet([{0}]);var groups=[{1}];var timeline = new vis.Timeline(container, items, options, groups);timeline.on('select', action);</script>",
 "videotimelineelement":"{id: {0}, video: {1}, group:{2}, source:{3}, start:{4}, end:{5}}",
 "videotimelinegroup":"{id:{0}, content:{1}}",
 
