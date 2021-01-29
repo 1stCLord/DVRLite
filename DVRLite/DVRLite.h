@@ -8,6 +8,7 @@
 #include "Onvif/Onvif.h"
 #include "Source.h"
 #include "FFmpeg/FFmpeg.h"
+#include "Web/JsonCache.h"
 
 class DVRLite
 {
@@ -51,6 +52,8 @@ public:
 	FFmpeg* GetFFmpeg(const std::string& source) { return ffmpegs[source].get(); }
 	FFmpeg* GetFFmpeg(const std::string& source) const { return (*ffmpegs.find(source)).second.get();}
 
+	JsonCache& GetCache();
+
 	Config& GetConfig();
 	const Config& GetConfig() const;
 
@@ -62,6 +65,7 @@ private:
 
 	Config config;
 	Onvif onvif;
+	JsonCache cache;
 
 	static std::ofstream logfile;
 };

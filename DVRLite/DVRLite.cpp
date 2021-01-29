@@ -22,7 +22,7 @@ int main(int argc, const char* argv[])
     return 0;
 }
 
-DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port) : config(configPath, webPath, port)
+DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port) : config(configPath, webPath, port), cache(100000)
 {
     logfile = std::ofstream(std::filesystem::path(configPath).parent_path() / "log.txt");
     config.Load();
@@ -66,6 +66,11 @@ void DVRLite::RemoveSource(const std::string& sourceName)
 const Source& DVRLite::GetSource(const std::string &sourceName) const
 {
     return *std::find_if(sources.begin(), sources.end(), [&](const Source& source) {return source.GetName() == sourceName; });
+}
+
+JsonCache& DVRLite::GetCache()
+{
+    return cache;
 }
 
 DVRLite::Config& DVRLite::GetConfig()

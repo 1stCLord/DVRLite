@@ -132,6 +132,10 @@ std::string MediaController::CreateVideoTimeline(const Source& source, std::chro
     std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
     videoDirectory = videoDirectory / source.GetName();
     int groupIndex = 0;
+
+    JsonCache& cache = dvrlite->GetCache();
+    cache.Preload(videoDirectory);
+
     if (std::filesystem::is_directory(videoDirectory))
     {
         int i = 1;
@@ -139,11 +143,10 @@ std::string MediaController::CreateVideoTimeline(const Source& source, std::chro
         {
             if (entry.path().extension() == ".json")
             {
-                std::ifstream file(entry.path());
-                if (file.is_open())
+                Json::Value* jsonptr = cache.Get(entry.path().string());
+                if(jsonptr != nullptr)
                 {
-                    Json::Value json;
-                    file >> json;
+                    Json::Value& json = *jsonptr;
                     std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
                     std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
                     if (endTimepoint > from && startTimepoint < to)
