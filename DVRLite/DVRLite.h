@@ -31,6 +31,7 @@ public:
 		std::string GetRecordPath() const;
 		std::string GetWebPath() const;
 		std::string GetSourcePath() const;
+		std::string GetLogPath() const;
 		void SetPort(uint16_t port);
 		uint16_t GetPort()const;
 

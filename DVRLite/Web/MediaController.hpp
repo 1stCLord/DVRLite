@@ -35,6 +35,7 @@ private:
   std::string CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
   std::string CreateSourceCheckboxes() const;
   std::string CreateConfigList() const;
+  std::string CreateLog() const;
 
   uint32_t VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
 

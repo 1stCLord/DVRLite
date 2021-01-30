@@ -231,6 +231,22 @@ std::string MediaController::CreateConfigList() const
     return ApplyTemplate("configform", configlist);
 }
 
+std::string MediaController::CreateLog() const
+{
+    std::ifstream logfile = std::ifstream(dvrlite->GetConfig().GetLogPath());
+    if (logfile.is_open())
+    {
+        std::string log;
+        for (std::string line; std::getline(logfile, line); ) 
+        {
+            log += line;
+            log += "<br>";
+        }
+        return log;
+    }
+    return "";
+}
+
 std::string MediaController::ApplyTemplate(const std::string& templatename, const std::string& value) const
 {
     Json::Value jsonvalue = templates[templatename];
@@ -273,6 +289,8 @@ void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& 
         replace_substring(content, "#configform#", CreateConfigList(), content);
     if (content.find("#htmlheader#") != std::string::npos)
         replace_substring(content, "#htmlheader#", templates["htmlheader"].asString(), content);
+    if (content.find("#log#") != std::string::npos)
+        replace_substring(content, "#log#", CreateLog(), content);
 }
 
 MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapper) :

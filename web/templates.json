@@ -3,7 +3,7 @@
 
 "headertop": "<a href=\"/\"><h1>DVRLite</h1></a>",
 "headertitle" : "<hr><div class=header><h2>{}</h2>",
-"headermenu":"<div class=headermenu><a class=headermenuitem href=\"add.html\">➕ Add</a><a class=headermenuitem href=\"config.html\">🎚️ Config</a></div></div><hr>",
+"headermenu":"<div class=headermenu><a class=headermenuitem href=\"add.html\">➕ Add</a><a class=headermenuitem href=\"config.html\">🎚️ Config</a><a class=headermenuitem href=\"log.html\">📋 Log</a></div></div><hr>",
 
 "sourcetable" : "<table class=sourcetable>{}</table>",
 "sourcerecord" : "<tr class=sourcerecord>{}</tr>",

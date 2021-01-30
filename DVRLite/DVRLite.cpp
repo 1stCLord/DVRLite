@@ -24,7 +24,7 @@ int main(int argc, const char* argv[])
 
 DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port) : config(configPath, webPath, port), cache(100000)
 {
-    logfile = std::ofstream(std::filesystem::path(configPath).parent_path() / "log.txt");
+    logfile = std::ofstream(config.GetLogPath());
     config.Load();
 
     //load the sources
@@ -166,6 +166,12 @@ std::string DVRLite::Config::GetSourcePath() const
 {
     std::lock_guard lock(configMutex);
     return (std::filesystem::path(configPath).parent_path() / "sources").string();
+}
+
+std::string DVRLite::Config::GetLogPath() const
+{
+    std::lock_guard lock(configMutex);
+    return (std::filesystem::path(configPath).parent_path() / "log.txt").string();
 }
 
 uint16_t DVRLite::Config::GetPort() const
