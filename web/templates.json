@@ -15,9 +15,10 @@
 
 "videosnapshot":"<img style=\"width:60%;display:block;margin-left:auto;margin-right:auto\" src=\"{}\"><br>",
 "videoelement":"<a href={1}>{0}</a><br>",
-"videotimeline":"<div id=\"visualization\"></div><script type=\"text/javascript\" src=\"timeline.js\"></script><script type=\"text/javascript\">var items = new vis.DataSet([{0}]);var groups=[{1}];var timeline = new vis.Timeline(container, items, options, groups);timeline.on('select', action);</script>",
+"videotimeline":"<div>{0}<div id=\"visualization\"></div></div><script type=\"text/javascript\" src=\"timeline.js\"></script><script type=\"text/javascript\">var items = new vis.DataSet([{1}]);var groups=[{2}];var timeline = new vis.Timeline(container, items, options, groups);timeline.on('select', action);</script>",
 "videotimelineelement":"{id: {0}, video: {1}, group:{2}, source:{3}, start:{4}, end:{5}}",
 "videotimelinegroup":"{id:{0}, content:{1}}",
+"videotimelinedatepicker":"<span class='slidertext'>{0}</span><input type='date' class='datepicker' value='{1}'>",
 
 "configform":"<form action=\"configure\" method=\"get\"><table>{}</table></form>",
 

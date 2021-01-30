@@ -48,3 +48,4 @@ std::string strip_quotes(const std::string &quotedString, const std::string &ref
 #define DATESTRINGFORMATQUOTES "'%Y-%m-%d %H:%M:%S'"
 #define DATEREFSTRING "YYYY-mm-dd HH:MM:SS"
 #define DATEFILEFORMAT "%Y%m%d-%H-%M-%S"
+#define DATEPICKERSTRINGFORMAT "%Y-%m-%d"

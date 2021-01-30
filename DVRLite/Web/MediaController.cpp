@@ -162,6 +162,11 @@ uint32_t MediaController::VideosBetweenDates(const Source& source, std::chrono::
     return i;
 }
 
+std::string MediaController::CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date) const
+{
+    return ApplyTemplate("videotimelinedatepicker", { label, to_string(date, DATEPICKERSTRINGFORMAT) });
+}
+
 std::string MediaController::CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
 {
     std::string videotimeline;
@@ -171,6 +176,9 @@ std::string MediaController::CreateVideoTimeline(const Source& source, std::chro
 
     JsonCache& cache = dvrlite->GetCache();
     cache.Preload(videoDirectory);
+
+    std::string pickers = CreateDatePicker("From: ", from);
+    pickers += CreateDatePicker("To: ", to);
 
     if (std::filesystem::is_directory(videoDirectory))
     {
@@ -200,7 +208,7 @@ std::string MediaController::CreateVideoTimeline(const Source& source, std::chro
     }
     std::vector<std::string> groupParameters{ std::to_string(groupIndex), '\'' + source.GetName() + '\''};
     std::string videoGroups = ApplyTemplate("videotimelinegroup", groupParameters);
-    std::vector<std::string> timelineParameters{ videotimeline, videoGroups };
+    std::vector<std::string> timelineParameters{ pickers, videotimeline, videoGroups };
     return ApplyTemplate("videotimeline", timelineParameters);
 }
 
@@ -284,17 +292,20 @@ void MediaController::LoadTemplates()
 
 void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime)
 {
-    if (inStartTime.get() == nullptr && inEndTime.get() == nullptr)
+    bool inStartTimeEmpty = inStartTime.get() == nullptr || inStartTime.get()->getSize() == 0;
+    bool inEndTimeEmpty = inEndTime.get() == nullptr || inEndTime.get()->getSize() == 0;
+
+    if (inStartTimeEmpty && inEndTimeEmpty)
     {
-        startTime = std::chrono::system_clock::now() - std::chrono::hours(24);
+        startTime = std::chrono::system_clock::now() - std::chrono::hours(24*365*10);
         endTime = std::chrono::system_clock::now();
     }
-    else if (inStartTime.get() == nullptr)
+    else if (inStartTimeEmpty)
     {
         endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
         startTime = endTime - std::chrono::hours(24);
     }
-    else if (inEndTime.get() == nullptr)
+    else if (inEndTimeEmpty)
     {
         startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
         endTime = startTime + std::chrono::hours(24);

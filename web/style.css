@@ -79,3 +79,8 @@ hr{border-top: 3px solid DarkSlateGrey;}
 .slider:hover {
   opacity: 1;
 }
+.datepicker
+{
+	margin-left:6px;
+	margin-right:24px;
+}
