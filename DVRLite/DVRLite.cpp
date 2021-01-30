@@ -13,7 +13,11 @@ std::ofstream DVRLite::logfile;
 int main(int argc, const char* argv[]) 
 {
     std::string configPath = argc >= 2 ? argv[1] : "config.json";
+#ifdef _DEBUG
     std::string webPath = argc >= 3 ? argv[2] : "../../../../web/";
+#else
+    std::string webPath = argc >= 3 ? argv[2] : "web/";
+#endif
     uint16_t port = argc >= 4 ? std::stoi(argv[3]) : DVRLite::Config::Port;
 
     DVRLite dvrlite = DVRLite(configPath, webPath, port);
