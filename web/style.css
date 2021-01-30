@@ -56,3 +56,26 @@ hr{border-top: 3px solid DarkSlateGrey;}
 .vis-item .vis-item-overflow {
   overflow: visible;
 }
+
+.slidertext
+{
+	color:tomato;
+	background-color:DarkSlateGrey;
+	border: 1px solid;
+	padding: 1px;
+	margin-left:2px;
+}
+
+.slider
+{
+	appearance: none;
+	width:40%;
+	height:25px;
+	background: Aquamarine;
+	opacity: 0.7;
+	transition: opacity .2s;
+	border: 1px solid DarkSalmon;
+}
+.slider:hover {
+  opacity: 1;
+}
