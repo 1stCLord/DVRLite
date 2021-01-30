@@ -10,9 +10,10 @@ extern "C" {
 #include <fstream>
 #include "Web/Utils.hpp"
 
-FFmpeg::FFmpeg(const Source &source) : 
+FFmpeg::FFmpeg(const Source &source, DVRLite *dvrlite) : 
     source(source),
-    isRecording(false)
+    isRecording(false),
+    dvrlite(dvrlite)
 {
 
 }
@@ -122,9 +123,10 @@ void FFmpeg::WriteMetadata(const std::filesystem::path &path, std::chrono::syste
     Json::Value json;
     json["startTime"] = to_string(startTime, DATESTRINGFORMAT);
     json["endTime"] = to_string(endTime, DATESTRINGFORMAT);
-    std::ofstream file(path);
+    dvrlite->GetCache().Put(path.string(), json);
+    /*std::ofstream file(path);
     if(file.is_open())
-        file << json;
+        file << json;*/
 }
 
 bool FFmpeg::MapInput(RecordThreadContext& context, StreamMap& streamMap, AVStream *stream)

@@ -9,6 +9,7 @@ class JsonCache
 public:
 	JsonCache(uint32_t size);
 	Json::Value* Get(const std::string &path);
+	void Put(const std::string& path, Json::Value json);
 	void Flush(const std::string &path);
 	void Preload(const std::filesystem::path& directory);
 

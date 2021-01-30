@@ -37,7 +37,7 @@ DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint
             {
                 std::pair<std::unordered_set<Source>::iterator, bool> result = sources.insert(Source(configPath));
                 const Source& source = *(result.first);
-                ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(source);
+                ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(source, this);
             }
         }
     }
@@ -50,7 +50,7 @@ void DVRLite::AddSource(const Source &source)
     Log("Adding source " + source.GetUsername());
     std::pair<SourceSet::iterator, bool> result = sources.insert(source);
     const Source& ourSource = *(result.first);
-    ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(ourSource);
+    ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(ourSource, this);
     onvif.Add(ourSource);
     ourSource.Save(std::filesystem::path(config.GetSourcePath()) / source.GetName() / std::string("config.json"));
 }

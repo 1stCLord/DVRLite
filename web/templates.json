@@ -1,5 +1,5 @@
 {
-"htmlheader":"<head><meta charset=\"UTF-8\"><link rel=\"stylesheet\" href=\"style.css\"><link rel=\"icon\" type=\"image/png\" href=\"favicon.png\" /></head>",
+"htmlheader":"<head><meta charset=\"UTF-8\"><title>DVRLite</title><link rel=\"stylesheet\" href=\"style.css\"><link rel=\"icon\" type=\"image/png\" href=\"favicon.png\" /></head>",
 
 "headertop": "<a href=\"/\"><h1>DVRLite</h1></a>",
 "headertitle" : "<hr><div class=header><h2>{}</h2>",
@@ -7,9 +7,9 @@
 
 "sourcetable" : "<table class=sourcetable>{}</table>",
 "sourcerecord" : "<tr class=sourcerecord>{}</tr>",
-"sourceheader" : "<tr class=sourceheaderrecord><th>Name</th><th>Onvif Address</th><th>Video Address</th><th>Record Duration</th><th>Disk Quota</th><th>Triggers</th><th></th></tr>",
+"sourceheader" : "<tr class=sourceheaderrecord><th>Name</th><th>Onvif Address</th><th>Hour</th><th>Today</th><th>Month</th><th>Triggers</th><th></th></tr>",
 "sourcedata" : "<td>{}</td>",
-"sourcelink" : "<td><a href=\"videolist.html?source={1}\">{0}</a></td>",
+"sourcelink" : "<td><a href=\"videolist.html?source={1}&startTime={2}&endTime={3}\">{0}</a></td>",
 "sourcedeletebutton":"<td><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
 "sourcecheckboxes":"<input id=\"trigger_{}\" name=\"trigger_{}\" type=\"checkbox\">{}</br>",
 

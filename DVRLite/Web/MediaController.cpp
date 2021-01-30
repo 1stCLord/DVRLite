@@ -84,12 +84,22 @@ std::string MediaController::CreateSourceList() const
     for (const Source& source : dvrlite->GetSources())
     {
         std::string sourcedata;
-        std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName() };
+        std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName(), "", "" };
         sourcedata += ApplyTemplate("sourcelink", sourceLinkParameters);
         sourcedata += ApplyTemplate("sourcedata", source.GetOnvifAddress());
-        sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
+        /*sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
         sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
-        sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetQuota()));
+        sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetQuota()));*/
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::chrono::system_clock::time_point hour = now - std::chrono::hours(1);
+        std::chrono::system_clock::time_point day = now - std::chrono::hours(24);
+        std::chrono::system_clock::time_point month = now - std::chrono::hours(24*30);
+        std::vector<std::string> hourSourceLinkParameters{ std::to_string(VideosBetweenDates(source, hour, now)), source.GetName(), to_string(hour, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+        sourcedata += ApplyTemplate("sourcelink",hourSourceLinkParameters);
+        std::vector<std::string> daySourceLinkParameters{ std::to_string(VideosBetweenDates(source, day, now)), source.GetName(), to_string(day, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+        sourcedata += ApplyTemplate("sourcelink", daySourceLinkParameters);
+        std::vector<std::string> monthSourceLinkParameters{ std::to_string(VideosBetweenDates(source, month, now)), source.GetName(), to_string(month, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+        sourcedata += ApplyTemplate("sourcelink", monthSourceLinkParameters);
         std::string triggers;
         for (const std::string& trigger : source.GetTriggers())
             triggers += trigger + "</br>";
@@ -124,6 +134,32 @@ std::string MediaController::CreateVideoList(const Source& source) const
 std::string MediaController::CreateVideoSnapshot(const Source& source) const
 {
     return ApplyTemplate("videosnapshot", source.GetAuthSnapshotAddress());
+}
+
+uint32_t MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
+{
+    std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
+    videoDirectory = videoDirectory / source.GetName();
+    JsonCache& cache = dvrlite->GetCache();
+    cache.Preload(videoDirectory);
+
+    int i = 0;
+    for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
+    {
+        if (entry.path().extension() == ".json")
+        {
+            Json::Value* jsonptr = cache.Get(entry.path().string());
+            if (jsonptr != nullptr)
+            {
+                Json::Value& json = *jsonptr;
+                std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
+                std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                if (endTimepoint > from && startTimepoint < to)
+                    ++i;
+            }
+        }
+    }
+    return i;
 }
 
 std::string MediaController::CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
@@ -255,18 +291,18 @@ void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTim
     }
     else if (inStartTime.get() == nullptr)
     {
-        endTime = to_timepoint(inEndTime->std_str(), DATESTRINGFORMAT);
+        endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
         startTime = endTime - std::chrono::hours(24);
     }
     else if (inEndTime.get() == nullptr)
     {
-        startTime = to_timepoint(inStartTime->std_str(), DATESTRINGFORMAT);
+        startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
         endTime = startTime + std::chrono::hours(24);
     }
     else
     {
-        startTime = to_timepoint(inStartTime->std_str(), DATESTRINGFORMAT);
-        endTime = to_timepoint(inEndTime->std_str(), DATESTRINGFORMAT);
+        startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+        endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()),DATEREFSTRING), DATESTRINGFORMAT);
     }
 }
 

@@ -4,6 +4,14 @@
 
 JsonCache::JsonCache(uint32_t size) : size(size){}
 
+void JsonCache::Put(const std::string& path, Json::Value json)
+{
+	if (cache.size() >= size)
+		cache.erase(cache.begin());
+	cache[path] = json;
+	Flush(path);
+}
+
 Json::Value* JsonCache::Get(const std::string& path)
 {
 	Cache::iterator found = cache.find(path);

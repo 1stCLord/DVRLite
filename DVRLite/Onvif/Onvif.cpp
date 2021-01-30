@@ -55,7 +55,9 @@ void Onvif::Add(const Source &source)
 				DVRLite::Log("Record Path Empty");
 		}
 	}));
+#if DEBUG_RECORD
 	subscriptions.back()->call();
+#endif
 }
 void Onvif::Remove(const std::string &sourceName)
 {

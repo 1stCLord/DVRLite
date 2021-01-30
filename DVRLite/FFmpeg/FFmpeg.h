@@ -11,6 +11,7 @@ struct AVStream;
 struct AVFormatContext;
 struct AVOutputFormat;
 class Source;
+class DVRLite;
 
 struct StreamMap
 {
@@ -32,7 +33,7 @@ struct RecordThreadContext
 class FFmpeg
 {
 public:
-	FFmpeg(const Source &source);
+	FFmpeg(const Source &source, DVRLite *dvrlite);
 	FFmpeg(const FFmpeg&) = delete;
 	FFmpeg(FFmpeg&&) = delete;
 	FFmpeg& operator=(const FFmpeg&) = delete;
@@ -41,6 +42,7 @@ public:
 	void Record(std::chrono::seconds duration, const std::filesystem::path &path);
 	bool IsRecording() const;
 private:
+	DVRLite* const dvrlite;
 	const Source& source;
 
 	std::thread recordThread;

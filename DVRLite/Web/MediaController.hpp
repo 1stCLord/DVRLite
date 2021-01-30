@@ -35,6 +35,8 @@ private:
   std::string CreateSourceCheckboxes() const;
   std::string CreateConfigList() const;
 
+  uint32_t VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
+
   void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const;
   std::string ApplyTemplate(const std::string& templatename, const std::string& value) const;
   std::string ApplyTemplate(const std::string& templatename, const std::vector<std::string>& value) const;

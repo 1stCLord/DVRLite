@@ -91,13 +91,13 @@ v_int64 getMillisTickCount()
   return millis.count();
 }
 
-std::string escapeUrl(std::string& url)
+std::string escapeUrl(const std::string& url)
 {
     static_assert("TODO");
     return std::string();
 }
 
-std::string unescapeUrl(std::string& url)
+std::string unescapeUrl(const std::string& url)
 {
     std::string resultString;
     size_t end = 0, position = 0;
@@ -212,4 +212,11 @@ std::string filename_to_datestring(const std::string& filename)
     std::string minute = filename.substr(12, 2);
     std::string second = filename.substr(15, 2);
     return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+}
+
+std::string strip_quotes(const std::string& quotedString, const std::string &refString)
+{
+    if (quotedString.size() > refString.size())
+        return quotedString.substr(1, quotedString.size() - 2);
+    else return quotedString;
 }
