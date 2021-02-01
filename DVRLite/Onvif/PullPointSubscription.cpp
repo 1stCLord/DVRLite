@@ -9,8 +9,8 @@
 #include "DVRLite.h"
 
 #define PULL_DURATION "PT5S"
-#define SUBSCRIPTION_DURATION "PT5M"
-#define SECONDS_TO_RENEW 10
+#define SUBSCRIPTION_DURATION "PT10M"
+#define SECONDS_TO_RENEW 30
 
 PullPointSubscription::PullPointSubscription(Source& source, std::function<void(void)> alert) :
 	running(true),
