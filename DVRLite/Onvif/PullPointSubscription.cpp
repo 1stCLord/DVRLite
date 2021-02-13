@@ -38,6 +38,7 @@ namespace DVRLite
 		std::string username = source.GetUsername();
 		std::string password = source.GetPassword();
 		DeviceBindingProxy deviceBinding = DeviceBindingProxy(endpoint.c_str());
+		PullPointSubscription::SetTimeouts(deviceBinding.soap);
 		soap_register_plugin(deviceBinding.soap, soap_wsse);
 
 		soap_wsse_add_Timestamp(deviceBinding.soap, "Time", 10);
@@ -56,6 +57,7 @@ namespace DVRLite
 		{
 			Log(filter, "PullPointSubscription Got Caps " + source.GetName());
 			MediaBindingProxy mediaBinding = MediaBindingProxy(capabilitiesResponse.Capabilities->Media->XAddr.c_str());
+			PullPointSubscription::SetTimeouts(mediaBinding.soap);
 			soap_wsse_add_UsernameTokenDigest(mediaBinding.soap, NULL, username.c_str(), password.c_str());
 			soap_register_plugin(mediaBinding.soap, soap_wsse);
 			_trt__GetStreamUri getStreamUri;
@@ -74,6 +76,7 @@ namespace DVRLite
 				source.SetOnvifSnapshotAddress(getSnapshotUriResponse.MediaUri->Uri);
 
 			pullpointSubscriptionBindingProxy = std::unique_ptr<PullPointSubscriptionBindingProxy>(new PullPointSubscriptionBindingProxy(capabilitiesResponse.Capabilities->Events->XAddr.c_str()));
+			PullPointSubscription::SetTimeouts(pullpointSubscriptionBindingProxy->soap);
 			soap_wsse_add_UsernameTokenDigest(pullpointSubscriptionBindingProxy->soap, NULL, username.c_str(), password.c_str());
 			soap_register_plugin(pullpointSubscriptionBindingProxy->soap, soap_wsse);
 
@@ -109,6 +112,15 @@ namespace DVRLite
 		size_t end = buffer.find("/>", begin);
 		if (end == std::string::npos)return "";
 		return buffer.substr(begin, end - begin);
+	}
+
+	void PullPointSubscription::SetTimeouts(soap* soap)
+	{
+		soap->connect_timeout = 10;
+		soap->connect_retry = 1;
+		soap->send_timeout = 5;
+		soap->recv_timeout = 5;
+		soap->transfer_timeout = 10;
 	}
 
 	bool PullPointSubscription::PullMessages()

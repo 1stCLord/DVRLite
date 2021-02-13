@@ -7,6 +7,7 @@
 #include "Source.h"
 #include "Log.h"
 
+struct soap;
 class PullPointSubscriptionBindingProxy;
 namespace DVRLite
 {
@@ -42,6 +43,7 @@ namespace DVRLite
 		void Uninit();
 
 		static std::string ManualParseMessage(const std::string& buffer);
+		static void SetTimeouts(soap* soap);
 
 	};
 }
