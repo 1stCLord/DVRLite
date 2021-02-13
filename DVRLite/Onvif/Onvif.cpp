@@ -33,9 +33,9 @@ void Onvif::Init(DVRLite *dvrlite)
 void Onvif::Add(const Source &source)
 {
 	DVRLite::Log("Onvif Adding " + source.GetName());
-	subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [source, this]()
+	subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [source, this](const std::string &message)
 	{
-		DVRLite::Log("Alert " + source.GetName());
+		DVRLite::Log("Alert " + source.GetName() + " - " + message);
 		for (const std::string& trigger : source.GetTriggers())
 		{
 			FFmpeg* ffmpeg = dvrlite->GetFFmpeg(trigger);

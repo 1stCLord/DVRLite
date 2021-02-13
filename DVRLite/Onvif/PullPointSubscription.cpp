@@ -12,7 +12,7 @@
 #define SUBSCRIPTION_DURATION "PT10M"
 #define SECONDS_TO_RENEW 30
 
-PullPointSubscription::PullPointSubscription(Source& source, std::function<void(void)> alert) :
+PullPointSubscription::PullPointSubscription(Source& source, std::function<void(const std::string &)> alert) :
 	running(true),
 	alert(alert),
 	source(source)
@@ -95,6 +95,19 @@ std::string PullPointSubscription::Init()
 	return std::string();
 }
 
+const std::string dataTag = "<tt:Data>";
+const std::string simpleItemOpen = "<tt:SimpleItem ";
+std::string PullPointSubscription::ManualParseMessage(const std::string &buffer)
+{
+	size_t begin = buffer.find(dataTag) + dataTag.length();
+	if (begin == std::string::npos)return "";
+	begin = buffer.find(simpleItemOpen, begin) + simpleItemOpen.length();
+	if (begin == std::string::npos)return "";
+	size_t end = buffer.find("/>", begin);
+	if (end == std::string::npos)return "";
+	return buffer.substr(begin, end - begin);
+}
+
 bool PullPointSubscription::PullMessages()
 {
 	if (pullpointSubscriptionBindingProxy)
@@ -110,19 +123,24 @@ bool PullPointSubscription::PullMessages()
 		soap_wsa_request(pullpointSubscriptionBindingProxy->soap, nullptr, pullpoint.c_str(), "PullMessages");
 		_tev__PullMessagesResponse pullMessagesResponse;
 		pullpointSubscriptionBindingProxy->PullMessages(pullpoint.c_str(), nullptr, &pullMessages, pullMessagesResponse);
-		if (!pullMessagesResponse.wsnt__NotificationMessage.empty())
-			alert();
-
-		if (pullMessagesResponse.soap->error != SOAP_OK && pullMessagesResponse.soap->error != SOAP_MUSTUNDERSTAND)
+		for (wsnt__NotificationMessageHolderType* notification : pullMessagesResponse.wsnt__NotificationMessage)
 		{
-			DVRLite::Log("Subscription Expired " + source.GetName());
-			return false;
-		}
-		else if (pullMessagesResponse.soap->error == SOAP_OK && (pullMessagesResponse.TerminationTime - pullMessagesResponse.CurrentTime) < SECONDS_TO_RENEW)
-		{
-			Renew();
+			std::string buffer = std::string(notification->soap->buf, notification->soap->buflen);
+			alert(ManualParseMessage(buffer));
 		}
 
+		if (pullMessagesResponse.soap != nullptr)
+		{
+			if (pullMessagesResponse.soap->error != SOAP_OK && pullMessagesResponse.soap->error != SOAP_MUSTUNDERSTAND)
+			{
+				DVRLite::Log("Subscription Expired " + source.GetName());
+				return false;
+			}
+			else if (pullMessagesResponse.soap->error == SOAP_OK && (pullMessagesResponse.TerminationTime - pullMessagesResponse.CurrentTime) < SECONDS_TO_RENEW)
+			{
+				Renew();
+			}
+		}
 		return true;
 	}
 	return false;

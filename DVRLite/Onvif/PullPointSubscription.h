@@ -11,21 +11,21 @@ class PullPointSubscriptionBindingProxy;
 class PullPointSubscription
 {
 public:
-	PullPointSubscription(Source& source, std::function<void(void)> alert);
+	PullPointSubscription(Source& source, std::function<void(const std::string &)> alert);
 	~PullPointSubscription();
 	PullPointSubscription(const PullPointSubscription&) = delete;
 	PullPointSubscription(PullPointSubscription&&) = delete;
 	PullPointSubscription& operator=(const PullPointSubscription&) = delete;
 	PullPointSubscription& operator=(PullPointSubscription&&) = delete;
 
-	void call() { alert(); }
+	void call(const std::string &message) { alert(message); }
 
 	Source& source;
 private:
 	std::atomic_bool running;
 	std::thread thread;
 
-	std::function<void(void)> alert;
+	std::function<void(const std::string &)> alert;
 
 	std::string pullpoint;
 	std::unique_ptr<PullPointSubscriptionBindingProxy> pullpointSubscriptionBindingProxy;
@@ -36,5 +36,7 @@ private:
 	bool PullMessages();
 	void Renew();
 	void Uninit();
+
+	static std::string ManualParseMessage(const std::string &buffer);
 
 };
