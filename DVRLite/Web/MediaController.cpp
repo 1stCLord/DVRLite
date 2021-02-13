@@ -143,6 +143,7 @@ uint32_t MediaController::VideosBetweenDates(const Source& source, std::chrono::
     JsonCache& cache = dvrlite->GetCache();
     cache.Preload(videoDirectory);
 
+    DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + " & " + to_string(to, DATESTRINGFORMATQUOTES));
     int i = 0;
     for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
     {
@@ -154,11 +155,13 @@ uint32_t MediaController::VideosBetweenDates(const Source& source, std::chrono::
                 Json::Value& json = *jsonptr;
                 std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
                 std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " compare " + json["startTime"].asString() + " & " + json["endTime"].asString());
                 if (endTimepoint > from && startTimepoint < to)
                     ++i;
             }
         }
     }
+    DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " found " + std::to_string(i));
     return i;
 }
 
