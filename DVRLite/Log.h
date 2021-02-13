@@ -16,12 +16,12 @@ namespace DVRLite::Logger
 
 	inline LogFilter operator&(LogFilter first, LogFilter second)
 	{
-		return static_cast<LogFilter>(static_cast<std::byte>(first) & static_cast<std::byte>(second));
+		return static_cast<LogFilter>(static_cast<uint8_t>(first) & static_cast<uint8_t>(second));
 	}
 	
 	inline LogFilter operator|(LogFilter first, LogFilter second)
 	{
-		return static_cast<LogFilter>(static_cast<std::byte>(first) | static_cast<std::byte>(second));
+		return static_cast<LogFilter>(static_cast<uint8_t>(first) | static_cast<uint8_t>(second));
 	}
 
 	inline LogFilter& operator&=(LogFilter& first, LogFilter second) { first = first & second; return first; }
