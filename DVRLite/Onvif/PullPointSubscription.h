@@ -5,38 +5,43 @@
 #include <string>
 #include <memory>
 #include "Source.h"
+#include "Log.h"
 
 class PullPointSubscriptionBindingProxy;
-
-class PullPointSubscription
+namespace DVRLite
 {
-public:
-	PullPointSubscription(Source& source, std::function<void(const std::string &)> alert);
-	~PullPointSubscription();
-	PullPointSubscription(const PullPointSubscription&) = delete;
-	PullPointSubscription(PullPointSubscription&&) = delete;
-	PullPointSubscription& operator=(const PullPointSubscription&) = delete;
-	PullPointSubscription& operator=(PullPointSubscription&&) = delete;
+	class PullPointSubscription
+	{
+	public:
+		PullPointSubscription(Source& source, std::function<void(const std::string&)> alert);
+		~PullPointSubscription();
+		PullPointSubscription(const PullPointSubscription&) = delete;
+		PullPointSubscription(PullPointSubscription&&) = delete;
+		PullPointSubscription& operator=(const PullPointSubscription&) = delete;
+		PullPointSubscription& operator=(PullPointSubscription&&) = delete;
 
-	void call(const std::string &message) { alert(message); }
+		void call(const std::string& message) { alert(message); }
 
-	Source& source;
-private:
-	std::atomic_bool running;
-	std::thread thread;
+		Source& source;
+	private:
+		std::atomic_bool running;
+		std::thread thread;
 
-	std::function<void(const std::string &)> alert;
+		std::function<void(const std::string&)> alert;
 
-	std::string pullpoint;
-	std::unique_ptr<PullPointSubscriptionBindingProxy> pullpointSubscriptionBindingProxy;
+		std::string pullpoint;
+		std::unique_ptr<PullPointSubscriptionBindingProxy> pullpointSubscriptionBindingProxy;
 
-	void Run();
+		static const Logger::LogFilter filter = Logger::LogFilter::PullPointSubscription;
 
-	std::string Init();
-	bool PullMessages();
-	void Renew();
-	void Uninit();
+		void Run();
 
-	static std::string ManualParseMessage(const std::string &buffer);
+		std::string Init();
+		bool PullMessages();
+		void Renew();
+		void Uninit();
 
-};
+		static std::string ManualParseMessage(const std::string& buffer);
+
+	};
+}

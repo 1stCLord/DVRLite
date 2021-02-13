@@ -2,52 +2,55 @@
 #include <fstream>
 #include <thread>
 
-JsonCache::JsonCache(uint32_t size) : size(size){}
-
-void JsonCache::Put(const std::string& path, Json::Value json)
+namespace DVRLite
 {
-	if (cache.size() >= size)
-		cache.erase(cache.begin());
-	cache[path] = json;
-	Flush(path);
-}
+	JsonCache::JsonCache(uint32_t size) : size(size) {}
 
-Json::Value* JsonCache::Get(const std::string& path)
-{
-	Cache::iterator found = cache.find(path);
-	if (found != cache.end())
-		return &found->second;
-
-	std::ifstream file(path);
-	if (file.is_open())
+	void JsonCache::Put(const std::string& path, Json::Value json)
 	{
 		if (cache.size() >= size)
 			cache.erase(cache.begin());
-
-		Json::Value &json = cache[path];
-		file >> json;
-		return &json;
+		cache[path] = json;
+		Flush(path);
 	}
-	return nullptr;
 
-}
-
-void JsonCache::Flush(const std::string& path)
-{
-	Cache::iterator found = cache.find(path);
-	if (found != cache.end())
+	Json::Value* JsonCache::Get(const std::string& path)
 	{
-		std::ofstream file(path);
+		Cache::iterator found = cache.find(path);
+		if (found != cache.end())
+			return &found->second;
+
+		std::ifstream file(path);
 		if (file.is_open())
-			file << found->second;
-	}
-}
+		{
+			if (cache.size() >= size)
+				cache.erase(cache.begin());
 
-void JsonCache::Preload(const std::filesystem::path& directory)
-{
-	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory))
+			Json::Value& json = cache[path];
+			file >> json;
+			return &json;
+		}
+		return nullptr;
+
+	}
+
+	void JsonCache::Flush(const std::string& path)
 	{
-		if (entry.path().extension() == ".json")
-			Get(entry.path().string());
+		Cache::iterator found = cache.find(path);
+		if (found != cache.end())
+		{
+			std::ofstream file(path);
+			if (file.is_open())
+				file << found->second;
+		}
+	}
+
+	void JsonCache::Preload(const std::filesystem::path& directory)
+	{
+		for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory))
+		{
+			if (entry.path().extension() == ".json")
+				Get(entry.path().string());
+		}
 	}
 }

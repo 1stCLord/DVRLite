@@ -3,25 +3,30 @@
 #include "PullPointSubscription.h"
 #include <memory>
 
-class DVRLite;
-
-class Onvif
+namespace DVRLite
 {
-public:
-    Onvif();
-    Onvif(const Onvif&) = delete;
-    Onvif(const Onvif&&) = delete;
-    const Onvif& operator=(const Onvif&) = delete;
-    const Onvif& operator=(Onvif&&) = delete;
-    ~Onvif() = default;
-    Onvif(DVRLite *dvrlite);
+    class DVRLite;
 
-    void Init(DVRLite *dvrlite);
+    class Onvif
+    {
+    public:
+        Onvif();
+        Onvif(const Onvif&) = delete;
+        Onvif(const Onvif&&) = delete;
+        const Onvif& operator=(const Onvif&) = delete;
+        const Onvif& operator=(Onvif&&) = delete;
+        ~Onvif() = default;
+        Onvif(DVRLite* dvrlite);
 
-    void Add(const Source &source);
-    void Remove(const std::string& source);
+        void Init(DVRLite* dvrlite);
 
-private:
-    DVRLite const* dvrlite;
-    std::vector<std::unique_ptr<PullPointSubscription>> subscriptions;
-};
+        void Add(const Source& source);
+        void Remove(const std::string& source);
+
+    private:
+        DVRLite const* dvrlite;
+        std::vector<std::unique_ptr<PullPointSubscription>> subscriptions;
+
+        static const Logger::LogFilter filter = Logger::LogFilter::Onvif;
+    };
+}

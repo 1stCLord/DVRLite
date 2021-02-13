@@ -3,28 +3,28 @@
   <body>
 	#header#
 	<form action="add_source" method="get">
-	<table>
-	<tr>
+	<table class="sourcetable configtable">
+	<tr class=sourcerecord>
 		<td><label for="name">Name </label></td>
 		<td><input id="name" name="name" required></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label for="address">Address </label></td>
 		<td><input id="onvifAddress" name="onvifAddress" type="url" required></td>
 	</tr>
-		<tr>
+	<tr class=sourcerecord>
 		<td><label for="customVideoAddress">Custom Video Address (optional) </label></td>
 		<td><input id="customVideoAddress" name="customVideoAddress" type="url"></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label for="username">Username </label></td>
 		<td><input id="username" name="username" required></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label for="password">Password </label></td>
 		<td><input id="password" name="password" type="password" required></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label>Sources to trigger </label></td>
 		<td>
 			<input id="self_trigger" name="self_trigger" type="checkbox">self</br>
@@ -32,23 +32,23 @@
 			#sourcecheckboxes#
 		</td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label for="duration">Record duration (seconds)</label></td>
 		<td><input id="duration" name="duration" type="number"></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label for="quota">Disk quota (mb)</label></td>
 		<td><input id="quota" name="quota" type="number"></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label for="recordAudio">Record Audio</label></td>
 		<td><input id="recordAudio" name="recordAudio" type="checkbox"></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td><label for="recordVideo">Record Video</label></td>
 		<td><input id="recordVideo" name="recordVideo" type="checkbox"></td>
 	</tr>
-	<tr>
+	<tr class=sourcerecord>
 		<td></td>
 		<td><input type="submit"></td>
 	</tr>

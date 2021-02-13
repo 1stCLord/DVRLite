@@ -20,9 +20,12 @@
 "videotimelinegroup":"{id:{0}, content:{1}}",
 "videotimelinedatepicker":"<span class='slidertext'>{0}</span><input type='date' class='datepicker' value='{1}'>",
 
-"configform":"<form action=\"configure\" method=\"get\"><table>{}</table></form>",
+"configform":"<form action=\"configure\" method=\"get\"><table class=\"sourcetable configtable\">{}</table></form>",
 
-"textrecord":"<tr><td><label for={0}>{1}</label></td><td><input id={0} name={0} value={2} {3}></td></tr>",
-"numberrecord":"<tr><td><label for={0}>{1}</label></td><td><input id={0} name={0} type=number value={2} {3}></td></tr>",
-"submitrecord":"<tr><td></td><td><input type=\"submit\"></td></tr>"
+"textrecord":"<tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} value={2} {3}></td></tr>",
+"numberrecord":"<tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} type=number value={2} {3}></td></tr>",
+"checkboxrecordelement":"<label for={0}>{1}</label><input id={0} name={0} type=checkbox {2} {3}><br>",
+"submitrecord":"<tr class=sourcerecord><td></td><td><input type=\"submit\"></td></tr>",
+
+"logrecord":"<tr class=sourcerecord><td><label>Log</label></td><td style=\"text-align:right\">{}</td></tr>"
 }

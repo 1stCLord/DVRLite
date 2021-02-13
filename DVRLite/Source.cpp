@@ -5,194 +5,198 @@
 #include <functional>
 #include "Web/Utils.hpp"
 #include "DVRLite.h"
-
-Source::Source(const QueryParams& queryParams)
+namespace DVRLite
 {
-    using String = oatpp::data::mapping::type::String;
-    using StringKeyLabel = oatpp::data::share::StringKeyLabel;
-    using MatchMapPair = std::pair<StringKeyLabel, StringKeyLabel>;
+    using namespace Logger;
 
-    Json::Value source;
-    name = queryParams.get("name")->std_str();
-    onvifAddress = queryParams.get("onvifAddress")->std_str();
-    onvifAddress = createFullOnvifPath(unescapeUrl(onvifAddress));
-    customVideoAddress = queryParams.get("customVideoAddress")->std_str();
-    customVideoAddress = unescapeUrl(customVideoAddress);
-
-    username = queryParams.get("username")->std_str();
-    password = queryParams.get("password")->std_str();
-
-    std::string variable = std::string("self_trigger");
-    String value = queryParams.get(variable.c_str());
-    if (value && value->std_str() == "on")
-        triggers.insert(name);
-    for (const MatchMapPair& queryParam : queryParams.getAll())
+    Source::Source(const QueryParams& queryParams)
     {
-        std::string start = "trigger_";
-        std::string query = queryParam.first.std_str();
-        std::string value = queryParam.second.std_str();
-        if (query.substr(0, start.size()) == start)
-        {
-            if (value == "on")
-                triggers.insert(query.substr(start.size()));
-        }
-    }
+        using String = oatpp::data::mapping::type::String;
+        using StringKeyLabel = oatpp::data::share::StringKeyLabel;
+        using MatchMapPair = std::pair<StringKeyLabel, StringKeyLabel>;
 
-    std::string durationString = queryParams.get("duration")->std_str();
-    duration = durationString.empty() ? 0 : std::stoi(durationString);
-    std::string quotaString = queryParams.get("quota")->std_str();
-    quota = quotaString.empty() ? 0 : std::stoi(quotaString);
-    String recordAudioString = queryParams.get("recordAudio");
-    recordAudio = recordAudioString == "on";
-    String recordVideoString = queryParams.get("recordVideo");
-    recordVideo = recordVideoString == "on";
-
-    std::stringstream jsonString;
-    jsonString << source;
-    DVRLite::Log("Source Created:\n " + jsonString.str());
-}
-
-void Source::Save(const std::filesystem::path& path) const
-{
-    Json::Value source;
-    {
-        std::lock_guard lock(sourceMutex);
-        source["name"] = name;
-        source["onvifAddress"] = onvifAddress;
-        source["customVideoAddress"] = customVideoAddress;
-        source["username"] = username;
-        source["password"] = password;
-        source["triggers"] = Json::Value(Json::arrayValue);
-        for (std::string trigger : triggers)
-            source["triggers"].append(trigger);
-        source["duration"] = duration;
-        source["quota"] = quota;
-        source["recordAudio"] = recordAudio;
-        source["recordVideo"] = recordVideo;
-    }
-
-    std::filesystem::path fullpath(path);
-    std::filesystem::create_directories(fullpath.parent_path());
-    std::ofstream file(path);
-    file << source;
-
-    std::stringstream jsonString;
-    jsonString << source;
-    DVRLite::Log("Source Saved:\n " + jsonString.str());
-}
-
-void Source::Load(const std::filesystem::path& path)
-{
-    std::ifstream file(path);
-    if (file.is_open())
-    {
         Json::Value source;
-        file >> source;
+        name = queryParams.get("name")->std_str();
+        onvifAddress = queryParams.get("onvifAddress")->std_str();
+        onvifAddress = createFullOnvifPath(unescapeUrl(onvifAddress));
+        customVideoAddress = queryParams.get("customVideoAddress")->std_str();
+        customVideoAddress = unescapeUrl(customVideoAddress);
 
-        std::lock_guard lock(sourceMutex);
-        name = source["name"].asString();
-        onvifAddress = source["onvifAddress"].asString();
-        customVideoAddress = source["customVideoAddress"].asString();
-        username = source["username"].asString();
-        password = source["password"].asString();
-        for (Json::Value& triggerValue : source["triggers"])
-            triggers.insert(triggerValue.asString());
-        duration = source["duration"].asUInt();
-        quota = source["quota"].asUInt();
-        recordAudio = source["recordAudio"].asBool();
-        recordVideo = source["recordVideo"].asBool();
+        username = queryParams.get("username")->std_str();
+        password = queryParams.get("password")->std_str();
+
+        std::string variable = std::string("self_trigger");
+        String value = queryParams.get(variable.c_str());
+        if (value && value->std_str() == "on")
+            triggers.insert(name);
+        for (const MatchMapPair& queryParam : queryParams.getAll())
+        {
+            std::string start = "trigger_";
+            std::string query = queryParam.first.std_str();
+            std::string value = queryParam.second.std_str();
+            if (query.substr(0, start.size()) == start)
+            {
+                if (value == "on")
+                    triggers.insert(query.substr(start.size()));
+            }
+        }
+
+        std::string durationString = queryParams.get("duration")->std_str();
+        duration = durationString.empty() ? 0 : std::stoi(durationString);
+        std::string quotaString = queryParams.get("quota")->std_str();
+        quota = quotaString.empty() ? 0 : std::stoi(quotaString);
+        String recordAudioString = queryParams.get("recordAudio");
+        recordAudio = recordAudioString == "on";
+        String recordVideoString = queryParams.get("recordVideo");
+        recordVideo = recordVideoString == "on";
 
         std::stringstream jsonString;
         jsonString << source;
-        DVRLite::Log("Config Loaded:\n " + jsonString.str());
+        Log(filter, "Source Created:\n " + jsonString.str());
     }
-}
 
-std::string Source::GetName() const
-{
-    std::lock_guard lock(sourceMutex);
-    return name;
-}
+    void Source::Save(const std::filesystem::path& path) const
+    {
+        Json::Value source;
+        {
+            std::lock_guard lock(sourceMutex);
+            source["name"] = name;
+            source["onvifAddress"] = onvifAddress;
+            source["customVideoAddress"] = customVideoAddress;
+            source["username"] = username;
+            source["password"] = password;
+            source["triggers"] = Json::Value(Json::arrayValue);
+            for (std::string trigger : triggers)
+                source["triggers"].append(trigger);
+            source["duration"] = duration;
+            source["quota"] = quota;
+            source["recordAudio"] = recordAudio;
+            source["recordVideo"] = recordVideo;
+        }
 
-std::string Source::GetOnvifAddress()const
-{
-    std::lock_guard lock(sourceMutex);
-    return onvifAddress;
-}
+        std::filesystem::path fullpath(path);
+        std::filesystem::create_directories(fullpath.parent_path());
+        std::ofstream file(path);
+        file << source;
 
-std::string Source::GetVideoAddress() const
-{
-    std::lock_guard lock(sourceMutex);
-    return customVideoAddress.empty() ? onvifVideoAddress : customVideoAddress;
-}
+        std::stringstream jsonString;
+        jsonString << source;
+        Log(filter, "Source Saved:\n " + jsonString.str());
+    }
 
-std::string Source::GetSnapshotAddress() const
-{
-    std::lock_guard lock(sourceMutex);
-    return onvifSnapshotAddress;
-}
+    void Source::Load(const std::filesystem::path& path)
+    {
+        std::ifstream file(path);
+        if (file.is_open())
+        {
+            Json::Value source;
+            file >> source;
 
-std::string Source::GetAuthSnapshotAddress() const
-{
-    std::lock_guard lock(sourceMutex);
-    return replace_substring(onvifSnapshotAddress, "://", "://" + username + ':' + password + '@');
-}
+            std::lock_guard lock(sourceMutex);
+            name = source["name"].asString();
+            onvifAddress = source["onvifAddress"].asString();
+            customVideoAddress = source["customVideoAddress"].asString();
+            username = source["username"].asString();
+            password = source["password"].asString();
+            for (Json::Value& triggerValue : source["triggers"])
+                triggers.insert(triggerValue.asString());
+            duration = source["duration"].asUInt();
+            quota = source["quota"].asUInt();
+            recordAudio = source["recordAudio"].asBool();
+            recordVideo = source["recordVideo"].asBool();
 
-std::string Source::GetUsername()const
-{
-    std::lock_guard lock(sourceMutex);
-    return username;
-}
+            std::stringstream jsonString;
+            jsonString << source;
+            Log(filter, "Config Loaded:\n " + jsonString.str());
+        }
+    }
 
-std::string Source::GetPassword()const
-{
-    std::lock_guard lock(sourceMutex);
-    return password;
-}
+    std::string Source::GetName() const
+    {
+        std::lock_guard lock(sourceMutex);
+        return name;
+    }
 
-uint16_t Source::GetDuration()const
-{
-    std::lock_guard lock(sourceMutex);
-    return duration;
-}
+    std::string Source::GetOnvifAddress()const
+    {
+        std::lock_guard lock(sourceMutex);
+        return onvifAddress;
+    }
 
-uint16_t Source::GetQuota()const
-{
-    std::lock_guard lock(sourceMutex);
-    return quota;
-}
+    std::string Source::GetVideoAddress() const
+    {
+        std::lock_guard lock(sourceMutex);
+        return customVideoAddress.empty() ? onvifVideoAddress : customVideoAddress;
+    }
 
-bool Source::GetRecordVideo() const
-{
-    std::lock_guard lock(sourceMutex);
-    return recordVideo;
-}
+    std::string Source::GetSnapshotAddress() const
+    {
+        std::lock_guard lock(sourceMutex);
+        return onvifSnapshotAddress;
+    }
 
-bool Source::GetRecordAudio() const
-{
-    std::lock_guard lock(sourceMutex);
-    return recordAudio;
-}
+    std::string Source::GetAuthSnapshotAddress() const
+    {
+        std::lock_guard lock(sourceMutex);
+        return replace_substring(onvifSnapshotAddress, "://", "://" + username + ':' + password + '@');
+    }
 
-void Source::SetOnvifVideoAddress(std::string& address)
-{
-    std::lock_guard lock(sourceMutex);
-    onvifVideoAddress = address;
-}
+    std::string Source::GetUsername()const
+    {
+        std::lock_guard lock(sourceMutex);
+        return username;
+    }
 
-void Source::SetOnvifSnapshotAddress(std::string& address)
-{
-    std::lock_guard lock(sourceMutex);
-    onvifSnapshotAddress = address;
-}
+    std::string Source::GetPassword()const
+    {
+        std::lock_guard lock(sourceMutex);
+        return password;
+    }
 
-std::unordered_set<std::string> Source::GetTriggers() const
-{
-    std::lock_guard lock(sourceMutex);
-    return triggers;
-}
+    uint16_t Source::GetDuration()const
+    {
+        std::lock_guard lock(sourceMutex);
+        return duration;
+    }
 
-size_t Source::Hash::operator() (const Source& source) const 
-{ 
-    return std::hash<std::string>{}(source.GetName());
+    uint16_t Source::GetQuota()const
+    {
+        std::lock_guard lock(sourceMutex);
+        return quota;
+    }
+
+    bool Source::GetRecordVideo() const
+    {
+        std::lock_guard lock(sourceMutex);
+        return recordVideo;
+    }
+
+    bool Source::GetRecordAudio() const
+    {
+        std::lock_guard lock(sourceMutex);
+        return recordAudio;
+    }
+
+    void Source::SetOnvifVideoAddress(std::string& address)
+    {
+        std::lock_guard lock(sourceMutex);
+        onvifVideoAddress = address;
+    }
+
+    void Source::SetOnvifSnapshotAddress(std::string& address)
+    {
+        std::lock_guard lock(sourceMutex);
+        onvifSnapshotAddress = address;
+    }
+
+    std::unordered_set<std::string> Source::GetTriggers() const
+    {
+        std::lock_guard lock(sourceMutex);
+        return triggers;
+    }
+
+    size_t Source::Hash::operator() (const Source& source) const
+    {
+        return std::hash<std::string>{}(source.GetName());
+    }
 }

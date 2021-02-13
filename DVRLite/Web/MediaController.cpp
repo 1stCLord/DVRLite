@@ -5,368 +5,398 @@
 #include "oatpp/network/Server.hpp"
 #include "DVRLite.h"
 
-std::shared_ptr<oatpp::data::stream::IOStream> MediaController::authconnection;
-
-std::shared_ptr<MediaController::OutgoingResponse> MediaController::getStaticFileResponse(const oatpp::String& filename,
-                                                                                          const oatpp::String& rangeHeader) const
+namespace DVRLite
 {
+    using namespace Logger;
 
-  auto file = staticFileManager->getFile(filename);
+    std::shared_ptr<oatpp::data::stream::IOStream> MediaController::authconnection;
 
-  OATPP_ASSERT_HTTP(file.get() != nullptr, Status::CODE_404, "File not found");
-
-  std::shared_ptr<OutgoingResponse> response;
-
-  if(!rangeHeader) {
-    response = getFullFileResponse(file);
-  } else {
-    response = getRangeResponse(rangeHeader, file);
-  }
-
-  response->putHeader("Accept-Ranges", "bytes");
-  response->putHeader(Header::CONNECTION, Header::Value::CONNECTION_KEEP_ALIVE);
-  auto mimeType = staticFileManager->guessMimeType(filename);
-  if(mimeType) {
-    response->putHeader(Header::CONTENT_TYPE, mimeType);
-  } else {
-    OATPP_LOGD("Server", "Unknown Mime-Type. Header not set");
-  }
-
-  return response;
-
-}
-
-std::shared_ptr<MediaController::OutgoingResponse> MediaController::getFullFileResponse(const oatpp::String& file) const
-{
-  return createResponse(Status::CODE_200, file);
-}
-
-std::shared_ptr<MediaController::OutgoingResponse> MediaController::getRangeResponse(const oatpp::String& rangeStr,
-                                                                                     const oatpp::String& file) const
-{
-
-  auto range = oatpp::web::protocol::http::Range::parse(rangeStr.getPtr());
-
-  if(range.end == 0) {
-    range.end = file->getSize() - 1;
-  }
-
-  OATPP_ASSERT_HTTP(range.isValid() &&
-                    range.start < file->getSize() &&
-                    range.end > range.start &&
-                    range.end < file->getSize(), Status::CODE_416, "Range is invalid");
-
-  auto chunk = oatpp::String((const char*)&file->getData()[range.start], (v_int32)(range.end - range.start + 1), false);
-
-  auto response = createResponse(Status::CODE_206, chunk);
-
-  oatpp::web::protocol::http::ContentRange contentRange(oatpp::web::protocol::http::ContentRange::UNIT_BYTES,
-                                                        range.start, range.end, file->getSize(), true);
-
-  OATPP_LOGD("Server", "range=%s", contentRange.toString()->c_str());
-
-  response->putHeader(Header::CONTENT_RANGE, contentRange.toString());
-  return response;
-
-}
-
-std::string MediaController::CreateHeader(const std::string &pageTitle) const
-{
-    return templates["headertop"].asString() +
-    ApplyTemplate("headertitle", pageTitle) +
-    templates["headermenu"].asString();
-}
-
-std::string MediaController::CreateSourceList() const
-{
-    std::string sourcelist;
-    sourcelist += templates["sourceheader"].asString();
-    for (const Source& source : dvrlite->GetSources())
+    std::shared_ptr<MediaController::OutgoingResponse> MediaController::getStaticFileResponse(const oatpp::String& filename,
+        const oatpp::String& rangeHeader) const
     {
-        std::string sourcedata;
-        std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName(), "", "" };
-        sourcedata += ApplyTemplate("sourcelink", sourceLinkParameters);
-        sourcedata += ApplyTemplate("sourcedata", source.GetOnvifAddress());
-        /*sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
-        sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
-        sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetQuota()));*/
-        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-        std::chrono::system_clock::time_point hour = now - std::chrono::hours(1);
-        std::chrono::system_clock::time_point day = now - std::chrono::hours(24);
-        std::chrono::system_clock::time_point month = now - std::chrono::hours(24*30);
-        std::vector<std::string> hourSourceLinkParameters{ std::to_string(VideosBetweenDates(source, hour, now)), source.GetName(), to_string(hour, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
-        sourcedata += ApplyTemplate("sourcelink",hourSourceLinkParameters);
-        std::vector<std::string> daySourceLinkParameters{ std::to_string(VideosBetweenDates(source, day, now)), source.GetName(), to_string(day, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
-        sourcedata += ApplyTemplate("sourcelink", daySourceLinkParameters);
-        std::vector<std::string> monthSourceLinkParameters{ std::to_string(VideosBetweenDates(source, month, now)), source.GetName(), to_string(month, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
-        sourcedata += ApplyTemplate("sourcelink", monthSourceLinkParameters);
-        std::string triggers;
-        for (const std::string& trigger : source.GetTriggers())
-            triggers += trigger + "</br>";
-        sourcedata += ApplyTemplate("sourcedata", triggers);
-        sourcedata += ApplyTemplate("sourcedeletebutton", source.GetName());
 
-        sourcelist += ApplyTemplate("sourcerecord", sourcedata);
-    }
-    sourcelist = ApplyTemplate("sourcetable", sourcelist);
-    return sourcelist;
-}
+        auto file = staticFileManager->getFile(filename);
 
-std::string MediaController::CreateVideoList(const Source& source) const
-{
-    std::string videolist;
-    std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
-    videoDirectory = videoDirectory / source.GetName();
-    if (std::filesystem::is_directory(videoDirectory))
-    {
-        for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
-        {
-            if (entry.path().extension() == ".mp4")
-            {
-                std::vector<std::string> videoParameters{ entry.path().filename().string(), (std::filesystem::path("videos") / source.GetName() / entry.path().filename()).string() };
-                videolist += ApplyTemplate("videoelement", videoParameters);
-            }
+        OATPP_ASSERT_HTTP(file.get() != nullptr, Status::CODE_404, "File not found");
+
+        std::shared_ptr<OutgoingResponse> response;
+
+        if (!rangeHeader) {
+            response = getFullFileResponse(file);
         }
+        else {
+            response = getRangeResponse(rangeHeader, file);
+        }
+
+        response->putHeader("Accept-Ranges", "bytes");
+        response->putHeader(Header::CONNECTION, Header::Value::CONNECTION_KEEP_ALIVE);
+        auto mimeType = staticFileManager->guessMimeType(filename);
+        if (mimeType) {
+            response->putHeader(Header::CONTENT_TYPE, mimeType);
+        }
+        else {
+            OATPP_LOGD("Server", "Unknown Mime-Type. Header not set");
+        }
+
+        return response;
+
     }
-    return videolist;
-}
 
-std::string MediaController::CreateVideoSnapshot(const Source& source) const
-{
-    return ApplyTemplate("videosnapshot", source.GetAuthSnapshotAddress());
-}
-
-uint32_t MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
-{
-    std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
-    videoDirectory = videoDirectory / source.GetName();
-    JsonCache& cache = dvrlite->GetCache();
-    cache.Preload(videoDirectory);
-
-    //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + " & " + to_string(to, DATESTRINGFORMATQUOTES));
-    DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + std::to_string(from.time_since_epoch().count()) + " & " + to_string(to, DATESTRINGFORMATQUOTES) + std::to_string(to.time_since_epoch().count()));
-    int i = 0;
-    for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
+    std::shared_ptr<MediaController::OutgoingResponse> MediaController::getFullFileResponse(const oatpp::String& file) const
     {
-        if (entry.path().extension() == ".json")
+        return createResponse(Status::CODE_200, file);
+    }
+
+    std::shared_ptr<MediaController::OutgoingResponse> MediaController::getRangeResponse(const oatpp::String& rangeStr,
+        const oatpp::String& file) const
+    {
+
+        auto range = oatpp::web::protocol::http::Range::parse(rangeStr.getPtr());
+
+        if (range.end == 0) {
+            range.end = file->getSize() - 1;
+        }
+
+        OATPP_ASSERT_HTTP(range.isValid() &&
+            range.start < file->getSize() &&
+            range.end > range.start &&
+            range.end < file->getSize(), Status::CODE_416, "Range is invalid");
+
+        auto chunk = oatpp::String((const char*)&file->getData()[range.start], (v_int32)(range.end - range.start + 1), false);
+
+        auto response = createResponse(Status::CODE_206, chunk);
+
+        oatpp::web::protocol::http::ContentRange contentRange(oatpp::web::protocol::http::ContentRange::UNIT_BYTES,
+            range.start, range.end, file->getSize(), true);
+
+        OATPP_LOGD("Server", "range=%s", contentRange.toString()->c_str());
+
+        response->putHeader(Header::CONTENT_RANGE, contentRange.toString());
+        return response;
+
+    }
+
+    std::string MediaController::CreateHeader(const std::string& pageTitle) const
+    {
+        return templates["headertop"].asString() +
+            ApplyTemplate("headertitle", pageTitle) +
+            templates["headermenu"].asString();
+    }
+
+    std::string MediaController::CreateSourceList() const
+    {
+        std::string sourcelist;
+        sourcelist += templates["sourceheader"].asString();
+        for (const Source& source : dvrlite->GetSources())
         {
-            Json::Value* jsonptr = cache.Get(entry.path().string());
-            if (jsonptr != nullptr)
+            std::string sourcedata;
+            std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName(), "", "" };
+            sourcedata += ApplyTemplate("sourcelink", sourceLinkParameters);
+            sourcedata += ApplyTemplate("sourcedata", source.GetOnvifAddress());
+            /*sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
+            sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
+            sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetQuota()));*/
+            std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+            std::chrono::system_clock::time_point hour = now - std::chrono::hours(1);
+            std::chrono::system_clock::time_point day = now - std::chrono::hours(24);
+            std::chrono::system_clock::time_point month = now - std::chrono::hours(24 * 30);
+            std::vector<std::string> hourSourceLinkParameters{ std::to_string(VideosBetweenDates(source, hour, now)), source.GetName(), to_string(hour, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            sourcedata += ApplyTemplate("sourcelink", hourSourceLinkParameters);
+            std::vector<std::string> daySourceLinkParameters{ std::to_string(VideosBetweenDates(source, day, now)), source.GetName(), to_string(day, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            sourcedata += ApplyTemplate("sourcelink", daySourceLinkParameters);
+            std::vector<std::string> monthSourceLinkParameters{ std::to_string(VideosBetweenDates(source, month, now)), source.GetName(), to_string(month, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            sourcedata += ApplyTemplate("sourcelink", monthSourceLinkParameters);
+            std::string triggers;
+            for (const std::string& trigger : source.GetTriggers())
+                triggers += trigger + "</br>";
+            sourcedata += ApplyTemplate("sourcedata", triggers);
+            sourcedata += ApplyTemplate("sourcedeletebutton", source.GetName());
+
+            sourcelist += ApplyTemplate("sourcerecord", sourcedata);
+        }
+        sourcelist = ApplyTemplate("sourcetable", sourcelist);
+        return sourcelist;
+    }
+
+    std::string MediaController::CreateVideoList(const Source& source) const
+    {
+        std::string videolist;
+        std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
+        videoDirectory = videoDirectory / source.GetName();
+        if (std::filesystem::is_directory(videoDirectory))
+        {
+            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
             {
-                Json::Value& json = *jsonptr;
-                std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
-                std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
-                //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " compare " + json["startTime"].asString() + " & " + json["endTime"].asString());
-                if (endTimepoint > from && startTimepoint < to)
+                if (entry.path().extension() == ".mp4")
                 {
-                    ++i;
-                    DVRLite::Log("    VideosBetweenDates - source " + source.GetName() + " matched " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + std::to_string(endTimepoint.time_since_epoch().count()));
+                    std::vector<std::string> videoParameters{ entry.path().filename().string(), (std::filesystem::path("videos") / source.GetName() / entry.path().filename()).string() };
+                    videolist += ApplyTemplate("videoelement", videoParameters);
                 }
-                else
-                    DVRLite::Log("    VideosBetweenDates - source " + source.GetName() + " didn't match " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + std::to_string(endTimepoint.time_since_epoch().count()));
             }
         }
+        return videolist;
     }
-    DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " found " + std::to_string(i));
-    return i;
-}
 
-std::string MediaController::CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date) const
-{
-    return ApplyTemplate("videotimelinedatepicker", { label, to_string(date, DATEPICKERSTRINGFORMAT) });
-}
-
-std::string MediaController::CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
-{
-    std::string videotimeline;
-    std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
-    videoDirectory = videoDirectory / source.GetName();
-    int groupIndex = 0;
-
-    JsonCache& cache = dvrlite->GetCache();
-    cache.Preload(videoDirectory);
-
-    std::string pickers = CreateDatePicker("From: ", from);
-    pickers += CreateDatePicker("To: ", to);
-
-    if (std::filesystem::is_directory(videoDirectory))
+    std::string MediaController::CreateVideoSnapshot(const Source& source) const
     {
-        int i = 1;
+        return ApplyTemplate("videosnapshot", source.GetAuthSnapshotAddress());
+    }
+
+    uint32_t MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
+    {
+        std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
+        videoDirectory = videoDirectory / source.GetName();
+        JsonCache& cache = dvrlite->GetCache();
+        cache.Preload(videoDirectory);
+
+        //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + " & " + to_string(to, DATESTRINGFORMATQUOTES));
+        Log(filter, "VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + std::to_string(from.time_since_epoch().count()) + " & " + to_string(to, DATESTRINGFORMATQUOTES) + std::to_string(to.time_since_epoch().count()));
+        int i = 0;
         for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
         {
             if (entry.path().extension() == ".json")
             {
                 Json::Value* jsonptr = cache.Get(entry.path().string());
-                if(jsonptr != nullptr)
+                if (jsonptr != nullptr)
                 {
                     Json::Value& json = *jsonptr;
                     std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
                     std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                    //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " compare " + json["startTime"].asString() + " & " + json["endTime"].asString());
                     if (endTimepoint > from && startTimepoint < to)
                     {
-                        if (i > 1)
-                            videotimeline += ",";
+                        ++i;
+                        Log(filter, "    VideosBetweenDates - source " + source.GetName() + " matched " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
+                    }
+                    else
+                        Log(filter, "    VideosBetweenDates - source " + source.GetName() + " didn't match " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
+                }
+            }
+        }
+        Log(filter, "VideosBetweenDates - source " + source.GetName() + " found " + std::to_string(i));
+        return i;
+    }
 
-                        std::filesystem::path videofile = entry.path().filename().replace_extension(".mp4");
-                        std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
-                        videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+    std::string MediaController::CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date) const
+    {
+        return ApplyTemplate("videotimelinedatepicker", { label, to_string(date, DATEPICKERSTRINGFORMAT) });
+    }
+
+    std::string MediaController::CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
+    {
+        std::string videotimeline;
+        std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
+        videoDirectory = videoDirectory / source.GetName();
+        int groupIndex = 0;
+
+        JsonCache& cache = dvrlite->GetCache();
+        cache.Preload(videoDirectory);
+
+        std::string pickers = CreateDatePicker("From: ", from);
+        pickers += CreateDatePicker("To: ", to);
+
+        if (std::filesystem::is_directory(videoDirectory))
+        {
+            int i = 1;
+            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
+            {
+                if (entry.path().extension() == ".json")
+                {
+                    Json::Value* jsonptr = cache.Get(entry.path().string());
+                    if (jsonptr != nullptr)
+                    {
+                        Json::Value& json = *jsonptr;
+                        std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
+                        std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                        if (endTimepoint > from && startTimepoint < to)
+                        {
+                            if (i > 1)
+                                videotimeline += ",";
+
+                            std::filesystem::path videofile = entry.path().filename().replace_extension(".mp4");
+                            std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
+                            videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+                        }
                     }
                 }
             }
         }
+        std::vector<std::string> groupParameters{ std::to_string(groupIndex), '\'' + source.GetName() + '\'' };
+        std::string videoGroups = ApplyTemplate("videotimelinegroup", groupParameters);
+        std::vector<std::string> timelineParameters{ pickers, videotimeline, videoGroups };
+        return ApplyTemplate("videotimeline", timelineParameters);
     }
-    std::vector<std::string> groupParameters{ std::to_string(groupIndex), '\'' + source.GetName() + '\''};
-    std::string videoGroups = ApplyTemplate("videotimelinegroup", groupParameters);
-    std::vector<std::string> timelineParameters{ pickers, videotimeline, videoGroups };
-    return ApplyTemplate("videotimeline", timelineParameters);
-}
 
-std::string MediaController::CreateSourceCheckboxes() const
-{
-    std::string sourcecheckboxes;
-    for (const Source& source : dvrlite->GetSources())
-        sourcecheckboxes += ApplyTemplate("sourcecheckboxes", source.GetName());
-    return sourcecheckboxes;
-}
-
-std::string MediaController::CreateConfigList() const
-{
-    std::string configlist;
-    std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", dvrlite->GetConfig().GetRecordPath(), "required" };
-    configlist = ApplyTemplate("textrecord", recordParameters);
-    std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "" };
-    configlist += ApplyTemplate("numberrecord", portParameters);
-    configlist += templates["submitrecord"].asString();
-    return ApplyTemplate("configform", configlist);
-}
-
-std::string MediaController::CreateLog() const
-{
-    std::ifstream logfile = std::ifstream(dvrlite->GetConfig().GetLogPath());
-    if (logfile.is_open())
+    std::string MediaController::CreateSourceCheckboxes() const
     {
-        std::string log;
-        for (std::string line; std::getline(logfile, line); ) 
+        std::string sourcecheckboxes;
+        for (const Source& source : dvrlite->GetSources())
+            sourcecheckboxes += ApplyTemplate("sourcecheckboxes", source.GetName());
+        return sourcecheckboxes;
+    }
+
+    std::string MediaController::CreateConfigList() const
+    {
+        std::string configlist;
+        std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", dvrlite->GetConfig().GetRecordPath(), "required" };
+        configlist = ApplyTemplate("textrecord", recordParameters);
+        std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "" };
+        configlist += ApplyTemplate("numberrecord", portParameters);
+        
+        const std::string checkedOn = "checked";
+        const std::string checkedOff = "";
+        
+        std::string loglist = ApplyTemplate("checkboxrecordelement", { "\"logDVRLite\"", "DVRLite ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::DVRLite)?checkedOn:checkedOff, "" });
+        loglist += ApplyTemplate("checkboxrecordelement", { "\"logOnvif\"", "Onvif ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::Onvif) ? checkedOn : checkedOff, "" });
+        loglist += ApplyTemplate("checkboxrecordelement", { "\"logPullPointSubscription\"", "PullPointSubscription ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::PullPointSubscription) ? checkedOn : checkedOff, "" });
+        loglist += ApplyTemplate("checkboxrecordelement", { "\"logFFmpeg\"", "FFmpeg ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::FFmpeg) ? checkedOn : checkedOff, "" });
+        loglist += ApplyTemplate("checkboxrecordelement", { "\"logWeb\"", "Web ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::Web) ? checkedOn : checkedOff, "" });
+        configlist += ApplyTemplate("logrecord", loglist);
+
+        configlist += templates["submitrecord"].asString();
+        return ApplyTemplate("configform", configlist);
+    }
+
+    std::string MediaController::CreateLog() const
+    {
+        std::ifstream logfile = std::ifstream(dvrlite->GetConfig().GetLogPath());
+        if (logfile.is_open())
         {
-            log += line;
-            log += "<br>";
+            std::string log;
+            for (std::string line; std::getline(logfile, line); )
+            {
+                log += line;
+                log += "<br>";
+            }
+            return log;
         }
-        return log;
+        return "";
     }
-    return "";
-}
 
-std::string MediaController::ApplyTemplate(const std::string& templatename, const std::string& value) const
-{
-    Json::Value jsonvalue = templates[templatename];
-    std::string result = templates[templatename].asString();
-    bool found = true;
-    while(found)
-        found = replace_substring(result, "{}", value, result);
-    return result;
-}
-
-std::string MediaController::ApplyTemplate(const std::string& templatename, const std::vector<std::string>& values) const
-{
-    Json::Value jsonvalue = templates[templatename];
-    std::string result = templates[templatename].asString();
-    for (int i = 0; i < values.size(); ++i)
+    std::string MediaController::ApplyTemplate(const std::string& templatename, const std::string& value) const
     {
-        std::string tag = '{' + std::to_string(i) + '}';
+        Json::Value jsonvalue = templates[templatename];
+        std::string result = templates[templatename].asString();
         bool found = true;
         while (found)
-            found = replace_substring(result, tag, values[i], result);
+            found = replace_substring(result, "{}", value, result);
+        return result;
     }
-    return result;
-}
 
-void MediaController::ApplyTemplates(const std::string &pageTitle, std::string& content, const Source &currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const
-{
-    if (content.find("#header#") != std::string::npos)
-        replace_substring(content, "#header#", CreateHeader(pageTitle), content);
-    if (content.find("#sourcelist#") != std::string::npos)
-        replace_substring(content, "#sourcelist#", CreateSourceList(), content);
-    if (content.find("#videolist#") != std::string::npos)
-        replace_substring(content, "#videolist#", CreateVideoList(currentSource), content);
-    if (content.find("#videosnapshot#") != std::string::npos)
-        replace_substring(content, "#videosnapshot#", CreateVideoSnapshot(currentSource), content);
-    if (content.find("#videotimeline#") != std::string::npos)
-        replace_substring(content, "#videotimeline#", CreateVideoTimeline(currentSource, startTime, endTime), content);
-    if (content.find("#sourcecheckboxes#") != std::string::npos)
-        replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
-    if (content.find("#configform#") != std::string::npos)
-        replace_substring(content, "#configform#", CreateConfigList(), content);
-    if (content.find("#htmlheader#") != std::string::npos)
-        replace_substring(content, "#htmlheader#", templates["htmlheader"].asString(), content);
-    if (content.find("#log#") != std::string::npos)
-        replace_substring(content, "#log#", CreateLog(), content);
-}
-
-MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapper) :
-    oatpp::web::server::api::ApiController(objectMapper)
-{
-}
-
-void MediaController::LoadTemplates()
-{
-    std::string webPath = dvrlite->GetConfig().GetWebPath(); 
-    std::ifstream file(std::filesystem::path(webPath) / "templates.json");
-    if (file.is_open())
+    std::string MediaController::ApplyTemplate(const std::string& templatename, const std::vector<std::string>& values) const
     {
-        file >> templates;
+        Json::Value jsonvalue = templates[templatename];
+        std::string result = templates[templatename].asString();
+        for (int i = 0; i < values.size(); ++i)
+        {
+            std::string tag = '{' + std::to_string(i) + '}';
+            bool found = true;
+            while (found)
+                found = replace_substring(result, tag, values[i], result);
+        }
+        return result;
     }
-}
 
-void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime)
-{
-    bool inStartTimeEmpty = inStartTime.get() == nullptr || inStartTime.get()->getSize() == 0;
-    bool inEndTimeEmpty = inEndTime.get() == nullptr || inEndTime.get()->getSize() == 0;
-
-    if (inStartTimeEmpty && inEndTimeEmpty)
+    void MediaController::ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const
     {
-        startTime = std::chrono::system_clock::now() - std::chrono::hours(24*365*10);
-        endTime = std::chrono::system_clock::now();
+        if (content.find("#header#") != std::string::npos)
+            replace_substring(content, "#header#", CreateHeader(pageTitle), content);
+        if (content.find("#sourcelist#") != std::string::npos)
+            replace_substring(content, "#sourcelist#", CreateSourceList(), content);
+        if (content.find("#videolist#") != std::string::npos)
+            replace_substring(content, "#videolist#", CreateVideoList(currentSource), content);
+        if (content.find("#videosnapshot#") != std::string::npos)
+            replace_substring(content, "#videosnapshot#", CreateVideoSnapshot(currentSource), content);
+        if (content.find("#videotimeline#") != std::string::npos)
+            replace_substring(content, "#videotimeline#", CreateVideoTimeline(currentSource, startTime, endTime), content);
+        if (content.find("#sourcecheckboxes#") != std::string::npos)
+            replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
+        if (content.find("#configform#") != std::string::npos)
+            replace_substring(content, "#configform#", CreateConfigList(), content);
+        if (content.find("#htmlheader#") != std::string::npos)
+            replace_substring(content, "#htmlheader#", templates["htmlheader"].asString(), content);
+        if (content.find("#log#") != std::string::npos)
+            replace_substring(content, "#log#", CreateLog(), content);
     }
-    else if (inStartTimeEmpty)
+
+    MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapper) :
+        oatpp::web::server::api::ApiController(objectMapper)
     {
-        endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
-        startTime = endTime - std::chrono::hours(24);
     }
-    else if (inEndTimeEmpty)
+
+    void MediaController::LoadTemplates()
     {
-        startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
-        endTime = startTime + std::chrono::hours(24);
+        std::string webPath = dvrlite->GetConfig().GetWebPath();
+        std::ifstream file(std::filesystem::path(webPath) / "templates.json");
+        if (file.is_open())
+        {
+            file >> templates;
+        }
     }
-    else
+
+    void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime)
     {
-        startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
-        endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()),DATEREFSTRING), DATESTRINGFORMAT);
+        bool inStartTimeEmpty = inStartTime.get() == nullptr || inStartTime.get()->getSize() == 0;
+        bool inEndTimeEmpty = inEndTime.get() == nullptr || inEndTime.get()->getSize() == 0;
+
+        if (inStartTimeEmpty && inEndTimeEmpty)
+        {
+            startTime = std::chrono::system_clock::now() - std::chrono::hours(24 * 365 * 10);
+            endTime = std::chrono::system_clock::now();
+        }
+        else if (inStartTimeEmpty)
+        {
+            endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+            startTime = endTime - std::chrono::hours(24);
+        }
+        else if (inEndTimeEmpty)
+        {
+            startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+            endTime = startTime + std::chrono::hours(24);
+        }
+        else
+        {
+            startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+            endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+        }
     }
-}
 
-void MediaController::run(DVRLite *dvrlite)
-{
-    oatpp::base::Environment::init();
+    Logger::LogFilter MediaController::GetLogFilter(const QueryParams& queryParams)
+    {
+        LogFilter result = LogFilter::None;
+        result |= (queryParams.get("logDVRLite") == "on") ? LogFilter::DVRLite : LogFilter::None;
+        result |= (queryParams.get("logOnvif") == "on") ? LogFilter::Onvif : LogFilter::None;
+        result |= (queryParams.get("logPullPointSubscription") == "on") ? LogFilter::PullPointSubscription : LogFilter::None;
+        result |= (queryParams.get("logFFmpeg") == "on") ? LogFilter::FFmpeg : LogFilter::None;
+        result |= (queryParams.get("logWeb") == "on") ? LogFilter::Web : LogFilter::None;
+        return result;
+    }
 
-    AppComponent components; // Create scope Environment components
+    void MediaController::run(DVRLite* dvrlite)
+    {
+        oatpp::base::Environment::init();
 
-    /* create ApiControllers and add endpoints to router */
+        AppComponent components; // Create scope Environment components
 
-    auto router = components.httpRouter.getObject();
+        /* create ApiControllers and add endpoints to router */
 
-    auto mediaController = MediaController::createShared();
-    mediaController->setDVR(dvrlite);
-    mediaController->LoadTemplates();
-    mediaController->addEndpointsToRouter(router);
+        auto router = components.httpRouter.getObject();
 
-    /* create server */
+        auto mediaController = MediaController::createShared();
+        mediaController->setDVR(dvrlite);
+        mediaController->LoadTemplates();
+        mediaController->addEndpointsToRouter(router);
 
-    oatpp::network::Server server(components.serverConnectionProvider.getObject(),
-        components.serverConnectionHandler.getObject());
+        /* create server */
 
-    OATPP_LOGI("Server", "Running on port %s...", components.serverConnectionProvider.getObject()->getProperty("port").toString()->c_str());
+        oatpp::network::Server server(components.serverConnectionProvider.getObject(),
+            components.serverConnectionHandler.getObject());
 
-    server.run();
+        //OATPP_LOGI("Server", "Running on port %s...", components.serverConnectionProvider.getObject()->getProperty("port").toString()->c_str());
+        Log(LogFilter::Web, "Running on port " + components.serverConnectionProvider.getObject()->getProperty("port").toString()->std_str());
 
-    oatpp::base::Environment::destroy();
+        server.run();
+
+        oatpp::base::Environment::destroy();
+    }
 }

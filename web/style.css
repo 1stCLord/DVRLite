@@ -48,6 +48,12 @@ hr{border-top: 3px solid DarkSlateGrey;}
 	color:tomato;
 	background-color: DarkSlateGrey;
 }
+
+.configtable
+{
+	max-width:600px;
+}
+
 .sourcerecord:hover
 {
 	background-color: lightgrey;
