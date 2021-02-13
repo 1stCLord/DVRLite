@@ -10,8 +10,8 @@
 "sourceheader" : "<tr class=sourceheaderrecord><th>Name</th><th>Onvif Address</th><th>Hour</th><th>Today</th><th>Month</th><th>Triggers</th><th></th></tr>",
 "sourcedata" : "<td>{}</td>",
 "sourcelink" : "<td><a href=\"videolist.html?source={1}&startTime={2}&endTime={3}\">{0}</a></td>",
-"sourcedeletebutton":"<td><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
-"sourcecheckboxes":"<input id=\"trigger_{}\" name=\"trigger_{}\" type=\"checkbox\">{}</br>",
+"sourcetoolelement":"<td><a href=\"add.html?source={}\">📝️ Edit</a><br><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
+"sourcecheckboxes":"<input id=\"{0}\" name=\"{0}\" type=\"checkbox\" {2}>{1}</br>",
 
 "videosnapshot":"<img style=\"width:60%;display:block;margin-left:auto;margin-right:auto\" src=\"{}\"><br>",
 "videoelement":"<a href={1}>{0}</a><br>",
@@ -20,12 +20,10 @@
 "videotimelinegroup":"{id:{0}, content:{1}}",
 "videotimelinedatepicker":"<span class='slidertext'>{0}</span><input type='date' class='datepicker' value='{1}'>",
 
-"configform":"<form action=\"configure\" method=\"get\"><table class=\"sourcetable configtable\">{}</table></form>",
+"form":"<form action={0} method=\"get\"><table class=\"sourcetable configtable\">{1}</table></form>",
 
-"textrecord":"<tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} value={2} {3}></td></tr>",
-"numberrecord":"<tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} type=number value={2} {3}></td></tr>",
+"typedrecord":" <tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} type={3} value={2} {4}></td></tr>",
 "checkboxrecordelement":"<label for={0}>{1}</label><input id={0} name={0} type=checkbox {2} {3}><br>",
 "submitrecord":"<tr class=sourcerecord><td></td><td><input type=\"submit\"></td></tr>",
-
-"logrecord":"<tr class=sourcerecord><td><label>Log</label></td><td style=\"text-align:right\">{}</td></tr>"
+"customrecord":"<tr class=sourcerecord><td><label>{0}</label></td><td style=\"text-align:right\">{1}</td></tr>"
 }

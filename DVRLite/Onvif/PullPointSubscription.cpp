@@ -8,7 +8,7 @@
 #include "gsoap-onvif/DeviceBinding.nsmap"
 #include "DVRLite.h"
 
-#define PULL_DURATION "PT5S"
+#define PULL_DURATION "PT1S"
 #define SUBSCRIPTION_DURATION "PT10M"
 #define SECONDS_TO_RENEW 30
 
@@ -200,8 +200,15 @@ namespace DVRLite
 		while (running)
 		{
 			if (pullpoint.empty())
+			{
+				std::this_thread::sleep_for(std::chrono::seconds(5));
 				pullpoint = Init();
-			if (!PullMessages())pullpoint.clear();
+			}
+			if (!pullpoint.empty())
+			{
+				if (!PullMessages())
+					pullpoint.clear();
+			}
 		}
 		Uninit();
 	}

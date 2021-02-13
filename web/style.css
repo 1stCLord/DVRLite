@@ -96,8 +96,8 @@ hr{border-top: 3px solid DarkSlateGrey;}
 {
 	padding:10px;
 	overflow: auto;
-	width:100%;
-	height:1000px;
+	width:auto;
+	height:750px;
 	font-size:14pt;
 	color:tomato;
 	background-color: DarkSlateGrey;

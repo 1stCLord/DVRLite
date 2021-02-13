@@ -47,10 +47,13 @@ namespace DVRLite
 
 	void JsonCache::Preload(const std::filesystem::path& directory)
 	{
-		for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory))
+		if (std::filesystem::is_directory(directory))
 		{
-			if (entry.path().extension() == ".json")
-				Get(entry.path().string());
+			for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory))
+			{
+				if (entry.path().extension() == ".json")
+					Get(entry.path().string());
+			}
 		}
 	}
 }

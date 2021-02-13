@@ -37,6 +37,7 @@ namespace DVRLite
 	void Onvif::Add(const Source& source)
 	{
 		Log(filter, "Onvif Adding " + source.GetName());
+		Remove(source.GetName());
 		subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [source, this](const std::string& message)
 		{
 			Log(filter, "Alert " + source.GetName() + " - " + message);
@@ -69,9 +70,13 @@ namespace DVRLite
 		std::vector<std::unique_ptr<PullPointSubscription>>::iterator it = std::find_if(subscriptions.begin(), subscriptions.end(),
 			[&](std::unique_ptr<PullPointSubscription>& pullpoint)
 		{
-			return pullpoint.get()->source.GetName() == sourceName;
+			if(pullpoint!=nullptr)
+				return pullpoint.get()->source.GetName() == sourceName;
 		});
-		it->reset();
-		subscriptions.erase(it);
+		if (it != subscriptions.end())
+		{
+			it->reset();
+			subscriptions.erase(it);
+		}
 	}
 }

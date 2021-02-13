@@ -110,7 +110,7 @@ namespace DVRLite
             for (const std::string& trigger : source.GetTriggers())
                 triggers += trigger + "</br>";
             sourcedata += ApplyTemplate("sourcedata", triggers);
-            sourcedata += ApplyTemplate("sourcedeletebutton", source.GetName());
+            sourcedata += ApplyTemplate("sourcetoolelement", source.GetName());
 
             sourcelist += ApplyTemplate("sourcerecord", sourcedata);
         }
@@ -152,24 +152,27 @@ namespace DVRLite
         //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + " & " + to_string(to, DATESTRINGFORMATQUOTES));
         Log(filter, "VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + std::to_string(from.time_since_epoch().count()) + " & " + to_string(to, DATESTRINGFORMATQUOTES) + std::to_string(to.time_since_epoch().count()));
         int i = 0;
-        for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
+        if (std::filesystem::is_directory(videoDirectory))
         {
-            if (entry.path().extension() == ".json")
+            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
             {
-                Json::Value* jsonptr = cache.Get(entry.path().string());
-                if (jsonptr != nullptr)
+                if (entry.path().extension() == ".json")
                 {
-                    Json::Value& json = *jsonptr;
-                    std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
-                    std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
-                    //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " compare " + json["startTime"].asString() + " & " + json["endTime"].asString());
-                    if (endTimepoint > from && startTimepoint < to)
+                    Json::Value* jsonptr = cache.Get(entry.path().string());
+                    if (jsonptr != nullptr)
                     {
-                        ++i;
-                        Log(filter, "    VideosBetweenDates - source " + source.GetName() + " matched " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
+                        Json::Value& json = *jsonptr;
+                        std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
+                        std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                        //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " compare " + json["startTime"].asString() + " & " + json["endTime"].asString());
+                        if (endTimepoint > from && startTimepoint < to)
+                        {
+                            ++i;
+                            Log(filter, "    VideosBetweenDates - source " + source.GetName() + " matched " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
+                        }
+                        else
+                            Log(filter, "    VideosBetweenDates - source " + source.GetName() + " didn't match " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
                     }
-                    else
-                        Log(filter, "    VideosBetweenDates - source " + source.GetName() + " didn't match " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
                 }
             }
         }
@@ -227,34 +230,36 @@ namespace DVRLite
         return ApplyTemplate("videotimeline", timelineParameters);
     }
 
-    std::string MediaController::CreateSourceCheckboxes() const
+    const std::string checkedOn = "checked";
+    const std::string checkedOff = "";
+
+    std::string MediaController::CreateSourceCheckboxes(const Source &source) const
     {
-        std::string sourcecheckboxes;
+        std::unordered_set<std::string> triggers = source.GetTriggers();
+        
+        std::string sourcecheckboxes = ApplyTemplate("sourcecheckboxes", {"self_trigger", "self", triggers.contains(source.GetName()) ? checkedOn : checkedOff } );
         for (const Source& source : dvrlite->GetSources())
-            sourcecheckboxes += ApplyTemplate("sourcecheckboxes", source.GetName());
+            sourcecheckboxes += ApplyTemplate("sourcecheckboxes", { "trigger_" + source.GetName(), source.GetName(), triggers.contains(source.GetName()) ? checkedOn : checkedOff });
         return sourcecheckboxes;
     }
 
     std::string MediaController::CreateConfigList() const
     {
         std::string configlist;
-        std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", dvrlite->GetConfig().GetRecordPath(), "required" };
-        configlist = ApplyTemplate("textrecord", recordParameters);
-        std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "" };
-        configlist += ApplyTemplate("numberrecord", portParameters);
-        
-        const std::string checkedOn = "checked";
-        const std::string checkedOff = "";
+        std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", dvrlite->GetConfig().GetRecordPath(), "text", "required" };
+        configlist = ApplyTemplate("typedrecord", recordParameters);
+        std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "number", "" };
+        configlist += ApplyTemplate("typedrecord", portParameters);
         
         std::string loglist = ApplyTemplate("checkboxrecordelement", { "\"logDVRLite\"", "DVRLite ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::DVRLite)?checkedOn:checkedOff, "" });
         loglist += ApplyTemplate("checkboxrecordelement", { "\"logOnvif\"", "Onvif ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::Onvif) ? checkedOn : checkedOff, "" });
         loglist += ApplyTemplate("checkboxrecordelement", { "\"logPullPointSubscription\"", "PullPointSubscription ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::PullPointSubscription) ? checkedOn : checkedOff, "" });
         loglist += ApplyTemplate("checkboxrecordelement", { "\"logFFmpeg\"", "FFmpeg ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::FFmpeg) ? checkedOn : checkedOff, "" });
         loglist += ApplyTemplate("checkboxrecordelement", { "\"logWeb\"", "Web ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::Web) ? checkedOn : checkedOff, "" });
-        configlist += ApplyTemplate("logrecord", loglist);
+        configlist += ApplyTemplate("customrecord", { "Log", loglist });
 
         configlist += templates["submitrecord"].asString();
-        return ApplyTemplate("configform", configlist);
+        return ApplyTemplate("form", { "\"configure\"", configlist });
     }
 
     std::string MediaController::CreateLog() const
@@ -283,6 +288,36 @@ namespace DVRLite
         return result;
     }
 
+    std::string MediaController::CreateAddSourceTable(const Source &source) const
+    {
+        std::string addsourcetable;
+        std::vector<std::string> nameParameters{ "\"name\"", "Name ", source.GetName(), "text", "required" };
+        addsourcetable += ApplyTemplate("typedrecord", nameParameters);
+        std::vector<std::string> addressParameters{ "\"onvifAddress\"", "Address ", source.GetOnvifAddress(), "url", "required" };
+        addsourcetable += ApplyTemplate("typedrecord", addressParameters);
+        std::vector<std::string> videoAddressParameters{ "\"customVideoAddress\"", "Custom Video Address (optional) ", source.GetVideoAddress(), "url", "" };
+        addsourcetable += ApplyTemplate("typedrecord", videoAddressParameters);
+        std::vector<std::string> usernameParameters{ "\"username\"", "Username ", source.GetUsername(), "text", "required" };
+        addsourcetable += ApplyTemplate("typedrecord", usernameParameters);
+        std::vector<std::string> passwordParameters{ "\"password\"", "Password ", source.GetPassword(), "password", "required" };
+        addsourcetable += ApplyTemplate("typedrecord", passwordParameters);
+
+        addsourcetable += ApplyTemplate("customrecord", { "Sources to trigger ", CreateSourceCheckboxes(source) });
+
+        std::vector<std::string> durationParameters{ "\"duration\"", "Record duration (seconds) ", std::to_string(source.GetDuration()), "number", "" };
+        addsourcetable += ApplyTemplate("typedrecord", durationParameters);
+        std::vector<std::string> quotaParameters{ "\"quota\"", "Disk quota (mb) ", std::to_string(source.GetQuota()), "number", "" };
+        addsourcetable += ApplyTemplate("typedrecord", quotaParameters);
+
+        std::vector<std::string> recordAudioParameters{ "\"recordAudio\"", "Record Audio ", "", "checkbox", source.GetRecordAudio() ? checkedOn : checkedOff };
+        addsourcetable += ApplyTemplate("typedrecord", recordAudioParameters);
+        std::vector<std::string> recordVideoParameters{ "\"recordVideo\"", "Record Video ", "", "checkbox",  source.GetRecordVideo() ? checkedOn : checkedOff };
+        addsourcetable += ApplyTemplate("typedrecord", recordVideoParameters);
+
+        addsourcetable += templates["submitrecord"].asString();
+        return ApplyTemplate("form", {"\"add_source\"", addsourcetable});
+    }
+
     std::string MediaController::ApplyTemplate(const std::string& templatename, const std::vector<std::string>& values) const
     {
         Json::Value jsonvalue = templates[templatename];
@@ -292,7 +327,11 @@ namespace DVRLite
             std::string tag = '{' + std::to_string(i) + '}';
             bool found = true;
             while (found)
-                found = replace_substring(result, tag, values[i], result);
+            {
+                std::string value = values[i];
+                if (value.empty())value = "\"\"";
+                found = replace_substring(result, tag, value, result);
+            }
         }
         return result;
     }
@@ -310,7 +349,7 @@ namespace DVRLite
         if (content.find("#videotimeline#") != std::string::npos)
             replace_substring(content, "#videotimeline#", CreateVideoTimeline(currentSource, startTime, endTime), content);
         if (content.find("#sourcecheckboxes#") != std::string::npos)
-            replace_substring(content, "#sourcecheckboxes#", CreateSourceCheckboxes(), content);
+            replace_substring(content, "#addsourceform#", CreateAddSourceTable(currentSource), content);
         if (content.find("#configform#") != std::string::npos)
             replace_substring(content, "#configform#", CreateConfigList(), content);
         if (content.find("#htmlheader#") != std::string::npos)
