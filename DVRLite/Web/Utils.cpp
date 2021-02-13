@@ -194,12 +194,14 @@ std::string to_string(std::chrono::system_clock::time_point time, const std::str
     ss << std::put_time(&tm, format.c_str());
     return ss.str();
 }
-
+#ifdef _WIN32
+#define timegm _mkgmtime
+#endif
 std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format)
 {
     std::tm tm;
     std::stringstream(timeString) >> std::get_time(&tm, format.c_str());
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    return std::chrono::system_clock::from_time_t(timegm(&tm));
 }
 
 //video filename format yyyymmdd-hh-mm-ss
