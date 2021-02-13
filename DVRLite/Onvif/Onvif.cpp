@@ -72,6 +72,7 @@ namespace DVRLite
 		{
 			if(pullpoint!=nullptr)
 				return pullpoint.get()->source.GetName() == sourceName;
+			return false;
 		});
 		if (it != subscriptions.end())
 		{
