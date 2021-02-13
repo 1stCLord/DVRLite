@@ -64,16 +64,20 @@ namespace DVRLite
 			_trt__GetStreamUriResponse getStreamUriResponse;
 			mediaBinding.GetStreamUri(&getStreamUri, getStreamUriResponse);
 			if (getStreamUriResponse.MediaUri)
+			{
+				Log(filter, "PullPointSubscription Got StreamUri " + source.GetName() + " " + getStreamUriResponse.MediaUri->Uri);
 				source.SetOnvifVideoAddress(getStreamUriResponse.MediaUri->Uri);
-
-
+			}
 
 			soap_wsse_add_UsernameTokenDigest(mediaBinding.soap, NULL, username.c_str(), password.c_str());
 			_trt__GetSnapshotUri getSnapshotUri;
 			_trt__GetSnapshotUriResponse getSnapshotUriResponse;
 			mediaBinding.GetSnapshotUri(&getSnapshotUri, getSnapshotUriResponse);
 			if (getSnapshotUriResponse.MediaUri)
+			{
+				Log(filter, "PullPointSubscription Got SnapshotUri " + source.GetName() + " " + getSnapshotUriResponse.MediaUri->Uri);
 				source.SetOnvifSnapshotAddress(getSnapshotUriResponse.MediaUri->Uri);
+			}
 
 			pullpointSubscriptionBindingProxy = std::unique_ptr<PullPointSubscriptionBindingProxy>(new PullPointSubscriptionBindingProxy(capabilitiesResponse.Capabilities->Events->XAddr.c_str()));
 			PullPointSubscription::SetTimeouts(pullpointSubscriptionBindingProxy->soap);
@@ -98,6 +102,7 @@ namespace DVRLite
 				return pullpoint;
 			}
 		}
+		Log(filter, "Initialise PullPointSubscription Failed to get Subscription Address " + source.GetName());
 		return std::string();
 	}
 
