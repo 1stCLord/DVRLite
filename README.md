@@ -10,13 +10,13 @@ Via the web interface you can add/remove cameras, control the settings and view 
 
 Roadmap:
 -  implement date selectors on video list
-✔ implement log filter
+-  implement log filter ✔
 -  implement multiple source view
 -  implement event message filter
 -  implement quota reaping
-✔ implement live snapshots
+-  implement live snapshots ✔
 -  implement live video
-✔ implement edit source
+-  implement edit source ✔
 -  maybe implement watchdog
 -  multiple themes
 -  shutdown/restart
