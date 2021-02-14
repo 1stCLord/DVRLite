@@ -90,8 +90,9 @@ namespace DVRLite
         for (const Source& source : dvrlite->GetSources())
         {
             std::string sourcedata;
-            std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName(), "", "" };
-            sourcedata += ApplyTemplate("sourcelink", sourceLinkParameters);
+            /*std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName(), "", "" };
+            sourcedata += ApplyTemplate("sourcelink", sourceLinkParameters);*/
+            sourcedata += ApplyTemplate("sourcesnapshotlink", { std::string((const char*)u8"📹") + source.GetName(), source.GetName() });
             sourcedata += ApplyTemplate("sourcedata", source.GetOnvifAddress());
             /*sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
             sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
@@ -278,6 +279,11 @@ namespace DVRLite
         return "";
     }
 
+    std::string MediaController::CreateSnapshot(const Source& source) const
+    {
+        return ApplyTemplate("sourcesnapshot", source.GetAuthSnapshotAddress());
+    }
+
     std::string MediaController::ApplyTemplate(const std::string& templatename, const std::string& value) const
     {
         Json::Value jsonvalue = templates[templatename];
@@ -356,6 +362,8 @@ namespace DVRLite
             replace_substring(content, "#htmlheader#", templates["htmlheader"].asString(), content);
         if (content.find("#log#") != std::string::npos)
             replace_substring(content, "#log#", CreateLog(), content);
+        if (content.find("#snapshot#") != std::string::npos)
+            replace_substring(content, "#snapshot#", CreateSnapshot(currentSource), content);
     }
 
     MediaController::MediaController(const std::shared_ptr<ObjectMapper>& objectMapper) :

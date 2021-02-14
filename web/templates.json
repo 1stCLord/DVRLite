@@ -12,6 +12,8 @@
 "sourcelink" : "<td><a href=\"videolist.html?source={1}&startTime={2}&endTime={3}\">{0}</a></td>",
 "sourcetoolelement":"<td><a href=\"add.html?source={}\">📝️ Edit</a><br><a href=\"delete_source?source={}\">🗑️ Delete</a></td>",
 "sourcecheckboxes":"<input id=\"{0}\" name=\"{0}\" type=\"checkbox\" {2}>{1}</br>",
+"sourcesnapshotlink":"<td><a href=\"snapshot.html?source={1}\">{0}</a></td>",
+"sourcesnapshot":"<script  type='text/javascript'>var interval = setInterval(\"reloadImg('snapshot', '{}')\", 300);</script><img class=playback id='snapshot' src='' />",
 
 "videosnapshot":"<img style=\"width:60%;display:block;margin-left:auto;margin-right:auto\" src=\"{}\"><br>",
 "videoelement":"<a href={1}>{0}</a><br>",

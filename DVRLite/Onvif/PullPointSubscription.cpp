@@ -9,8 +9,13 @@
 #include "DVRLite.h"
 
 #define PULL_DURATION "PT1S"
+#ifdef _DEBUG
+#define SUBSCRIPTION_DURATION "PT30S"
+#define SECONDS_TO_RENEW 20
+#else
 #define SUBSCRIPTION_DURATION "PT10M"
 #define SECONDS_TO_RENEW 30
+#endif
 
 namespace DVRLite
 {

@@ -39,7 +39,8 @@ namespace DVRLite
         std::string CreateSourceCheckboxes(const Source& source) const;
         std::string CreateConfigList() const;
         std::string CreateAddSourceTable(const Source& source) const;
-        std::string CreateLog() const;
+        std::string CreateLog() const; 
+        std::string CreateSnapshot(const Source& source) const;
 
         uint32_t VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
 
