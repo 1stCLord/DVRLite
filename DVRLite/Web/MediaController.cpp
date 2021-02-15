@@ -2,7 +2,6 @@
 #include "MediaController.hpp"
 #include "AppComponent.hpp"
 #include <fstream>
-#include "oatpp/network/Server.hpp"
 #include "DVRLite.h"
 
 namespace DVRLite
@@ -76,11 +75,27 @@ namespace DVRLite
 
     }
 
+    std::string MediaController::CreateHTMLHeader(const std::string& pageTitle) const
+    {
+        std::string scripts = "";
+        if (pageTitle == "Sources")
+            scripts = "<script type = \"text/javascript\" src = \"" + std::string("main.js") + "\"></script>";
+        if(pageTitle.starts_with("snapshot "))
+            scripts = "<script type = \"text/javascript\" src = \"" + std::string("snapshot.js") + "\"></script>";
+        if (pageTitle.starts_with("videolist "))
+            scripts = "<script type=\"text/javascript\" src=\"https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js\"></script><link href=\"https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css\" rel=\"stylesheet\" type=\"text/css\" />";
+        return ApplyTemplate("htmlheader", scripts);
+    }
+
     std::string MediaController::CreateHeader(const std::string& pageTitle) const
     {
-        return templates["headertop"].asString() +
-            ApplyTemplate("headertitle", pageTitle) +
-            templates["headermenu"].asString();
+        std::string addString = ApplyTemplate("headermenuitem", { "Add", "add.html", (const char*)u8"➕" });
+        std::string configString = ApplyTemplate("headerdropdownitem", { "Config", "config.html", (const char*)u8"⚙️" });
+        std::string logString = ApplyTemplate("headerdropdownitem", { "Log", "log.html", (const char*)u8"📋" });
+        std::string shutdownString = ApplyTemplate("headerdropdownitem", { "Shutdown", "shutdown", (const char*)u8"🛑" });
+
+        std::string headerDropdown = ApplyTemplate("headerdropdown", { addString, configString, logString, shutdownString });
+        return templates["headertop"].asString() + ApplyTemplate("headertitle", { pageTitle, headerDropdown });
     }
 
     std::string MediaController::CreateSourceList() const
@@ -90,9 +105,7 @@ namespace DVRLite
         for (const Source& source : dvrlite->GetSources())
         {
             std::string sourcedata;
-            /*std::vector<std::string> sourceLinkParameters{ std::string((const char*)u8"📹") + source.GetName(), source.GetName(), "", "" };
-            sourcedata += ApplyTemplate("sourcelink", sourceLinkParameters);*/
-            sourcedata += ApplyTemplate("sourcesnapshotlink", { std::string((const char*)u8"📹") + source.GetName(), source.GetName() });
+            sourcedata += ApplyTemplate("sourcesnapshotlink", source.GetName());
             sourcedata += ApplyTemplate("sourcedata", source.GetOnvifAddress());
             /*sourcedata += ApplyTemplate("sourcedata", source.GetVideoAddress());
             sourcedata += ApplyTemplate("sourcedata", std::to_string(source.GetDuration()));
@@ -359,7 +372,7 @@ namespace DVRLite
         if (content.find("#configform#") != std::string::npos)
             replace_substring(content, "#configform#", CreateConfigList(), content);
         if (content.find("#htmlheader#") != std::string::npos)
-            replace_substring(content, "#htmlheader#", templates["htmlheader"].asString(), content);
+            replace_substring(content, "#htmlheader#", CreateHTMLHeader(pageTitle), content);
         if (content.find("#log#") != std::string::npos)
             replace_substring(content, "#log#", CreateLog(), content);
         if (content.find("#snapshot#") != std::string::npos)
@@ -438,12 +451,13 @@ namespace DVRLite
 
         oatpp::network::Server server(components.serverConnectionProvider.getObject(),
             components.serverConnectionHandler.getObject());
+        mediaController->server = &server;
 
         //OATPP_LOGI("Server", "Running on port %s...", components.serverConnectionProvider.getObject()->getProperty("port").toString()->c_str());
         Log(LogFilter::Web, "Running on port " + components.serverConnectionProvider.getObject()->getProperty("port").toString()->std_str());
 
         server.run();
 
-        oatpp::base::Environment::destroy();
+       //oatpp::base::Environment::destroy();
     }
 }

@@ -26,14 +26,29 @@ hr{border-top: 3px solid DarkSlateGrey;}
 
 .headermenu
 {
-	width: 12%;
+	width: 180px;
 	display: flex;
 	align-self:center;
 }
 
+.headerdropdown
+{
+	background:transparent;
+	color:BurlyWood;
+	border-style:solid;
+	border-color:DarkSlateGrey;
+	appearance: none;
+}
+
+.headerdropdownitem
+{
+	background-color:DarkSlateGrey;
+	color:BurlyWood;
+}
+
 .headermenuitem
 {
-	flex:2;
+	flex:auto;
 }
 
 .sourcetable

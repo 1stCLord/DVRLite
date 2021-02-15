@@ -7,6 +7,7 @@
 #include "oatpp/web/protocol/http/outgoing/StreamingBody.hpp"
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
+#include "oatpp/network/Server.hpp"
 #include <filesystem>
 #include <json/json.h>
 #include <unordered_map>
@@ -24,12 +25,14 @@ namespace DVRLite
     private:
         OATPP_COMPONENT(std::shared_ptr<StaticFilesManager>, staticFileManager);
         DVRLite* dvrlite;
+        oatpp::network::Server* server = nullptr;
         static const Logger::LogFilter filter = Logger::LogFilter::Web;
     private:
         std::shared_ptr<OutgoingResponse> getStaticFileResponse(const oatpp::String& filename, const oatpp::String& rangeHeader) const;
         std::shared_ptr<OutgoingResponse> getFullFileResponse(const oatpp::String& file) const;
         std::shared_ptr<OutgoingResponse> getRangeResponse(const oatpp::String& rangeStr, const oatpp::String& file) const;
 
+        std::string CreateHTMLHeader(const std::string& pageTitle) const;
         std::string CreateHeader(const std::string& pageTitle) const;
         std::string CreateSourceList() const;
         std::string CreateVideoList(const Source& source) const;
@@ -206,6 +209,19 @@ namespace DVRLite
 
                 Action act() override
             {
+                return _return(controller->createResponse(Status::CODE_200, "ok"));
+            }
+
+        };
+
+        ENDPOINT_ASYNC("GET", "shutdown", Shutdown)
+        {
+
+            ENDPOINT_ASYNC_INIT(Shutdown)
+
+                Action act() override
+            {
+                controller->server->stop();
                 return _return(controller->createResponse(Status::CODE_200, "ok"));
             }
 
