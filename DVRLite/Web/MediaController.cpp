@@ -181,9 +181,9 @@ namespace DVRLite
         return i;
     }
 
-    std::string MediaController::CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date) const
+    std::string MediaController::CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date, const std::string &id) const
     {
-        return ApplyTemplate("videotimelinedatepicker", { label, to_string(date, DATEPICKERSTRINGFORMAT) });
+        return ApplyTemplate("videotimelinedatepicker", { label, to_string(date, DATEPICKERSTRINGFORMAT), id });
     }
 
     std::string MediaController::CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
@@ -196,8 +196,8 @@ namespace DVRLite
         JsonCache& cache = dvrlite->GetCache();
         cache.Preload(videoDirectory);
 
-        std::string pickers = CreateDatePicker("From: ", from);
-        pickers += CreateDatePicker("To: ", to);
+        std::string pickers = CreateDatePicker("From: ", from, "fromDatePicker");
+        pickers += CreateDatePicker("To: ", to, "toDatePicker");
 
         if (std::filesystem::is_directory(videoDirectory))
         {

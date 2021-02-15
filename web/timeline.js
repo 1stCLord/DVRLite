@@ -3,6 +3,28 @@ var options = {stack:false };
 var videoElement = document.getElementById("video");
 var playbackSpeedSlider = document.getElementById("playbackSpeed");
 var playbackSpeedText = document.getElementById("playbackSpeedText");
+var fromDatePicker = document.getElementById("fromDatePicker");
+var toDatePicker = document.getElementById("toDatePicker");
+
+fromDatePicker.onblur = function()
+{
+	newQuery(fromDatePicker, "startTime");
+}
+
+toDatePicker.onblur = function()
+{
+	newQuery(toDatePicker, "endTime");
+}
+
+function newQuery(valueSource, queryName)
+{
+	let searchParams = new URLSearchParams(window.location.search);
+	let value = "\"" + valueSource.value + " 00:00:00\"";
+	searchParams.set("startTime", value);
+	let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + unescape(searchParams.toString());
+	window.location.href = newurl;		
+}
+
 playbackSpeedSlider.oninput = function()
 {
 	playbackSpeedText.innerHTML = "Playback Speed:" + this.value;
