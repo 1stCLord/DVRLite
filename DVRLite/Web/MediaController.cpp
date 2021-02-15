@@ -77,13 +77,11 @@ namespace DVRLite
 
     std::string MediaController::CreateHTMLHeader(const std::string& pageTitle) const
     {
-        std::string scripts = "";
-        if (pageTitle == "Sources")
-            scripts = "<script type = \"text/javascript\" src = \"" + std::string("main.js") + "\"></script>";
+        std::string scripts = "<script type=\"text/javascript\" src=\"" + std::string("main.js")     + "\"></script>";
         if(pageTitle.starts_with("snapshot "))
-            scripts = "<script type = \"text/javascript\" src = \"" + std::string("snapshot.js") + "\"></script>";
+                   scripts += "<script type=\"text/javascript\" src=\"" + std::string("snapshot.js") + "\"></script>";
         if (pageTitle.starts_with("videolist "))
-            scripts = "<script type=\"text/javascript\" src=\"https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js\"></script><link href=\"https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css\" rel=\"stylesheet\" type=\"text/css\" />";
+            scripts += "<script type=\"text/javascript\" src=\"https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js\"></script><link href=\"https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css\" rel=\"stylesheet\" type=\"text/css\" />";
         return ApplyTemplate("htmlheader", scripts);
     }
 
