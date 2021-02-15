@@ -42,7 +42,7 @@ namespace DVRLite
 	std::string createFullOnvifPath(const std::string& url);
 
 	std::string to_string(std::chrono::system_clock::time_point time, const std::string& format);
-	std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format);
+	std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format, bool fixup = true);
 	std::string filename_to_datestring(const std::string& filename);
 
 	std::string strip_quotes(const std::string& quotedString, const std::string& refString);

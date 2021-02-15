@@ -203,10 +203,16 @@ namespace DVRLite
 #ifdef _WIN32
 #define timegm _mkgmtime
 #endif
-    std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format)
+    std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format, bool fixup)
     {
+        std::string fixedTimeString;
+        if (fixup)
+            fixedTimeString = replace_substring(timeString, "+", " ");
+        else
+            fixedTimeString = timeString;
+
         std::tm tm;
-        std::stringstream(timeString) >> std::get_time(&tm, format.c_str());
+        std::stringstream(fixedTimeString) >> std::get_time(&tm, format.c_str());
         return std::chrono::system_clock::from_time_t(timegm(&tm));
     }
 
