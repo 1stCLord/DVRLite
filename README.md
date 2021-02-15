@@ -9,7 +9,7 @@ Use a web based UI to control the application, there's currently no authenticati
 Via the web interface you can add/remove cameras, control the settings and view recorded video, there's currently no support for live video.
 
 Roadmap:
--  implement date selectors on video list
+-  implement date selectors on video list ✔
 -  implement log filter ✔
 -  implement multiple source view
 -  implement event message filter
