@@ -20,7 +20,7 @@ function newQuery(valueSource, queryName)
 {
 	let searchParams = new URLSearchParams(window.location.search);
 	let value = "\"" + valueSource.value + " 00:00:00\"";
-	searchParams.set("startTime", value);
+	searchParams.set(queryName, value);
 	let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + unescape(searchParams.toString());
 	window.location.href = newurl;		
 }
