@@ -2,8 +2,8 @@
 "htmlheader":"<head><meta charset=\"UTF-8\"><title>DVRLite</title><link rel=\"stylesheet\" href=\"style.css\"><link rel=\"icon\" type=\"image/png\" href=\"favicon.png\" />{}</head>",
 
 "headertop": "<a href=\"/\"><h1>DVRLite</h1></a>",
-"headertitle" : "<hr><div class=header><h2>{0}</h2>{1}</div>",
-"headerdropdown":"<div class=headermenu>{0}<select id='headerdropdown' class=headerdropdown><option selected hidden disabled>🔽 Settings</option>{1}{2}{3}</select></div><hr>",
+"headertitle" : "<hr><div class=header><h2>{0}</h2>{1}</div><hr>",
+"headerdropdown":"<div class=headermenu>{0}<select id='headerdropdown' class=headerdropdown><option selected hidden disabled>🔽 Settings</option>{1}{2}{3}{4}</select></div>",
 "headermenuitem":"<div class=headermenuitem>{2} <a href=\"{1}\">{0}</a></div>",
 "headerdropdownitem":"<option href=\"{1}\" class=headerdropdownitem>{2} {0}</option>",
 

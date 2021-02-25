@@ -91,8 +91,9 @@ namespace DVRLite
         std::string configString = ApplyTemplate("headerdropdownitem", { "Config", "config.html", (const char*)u8"⚙️" });
         std::string logString = ApplyTemplate("headerdropdownitem", { "Log", "log.html", (const char*)u8"📋" });
         std::string shutdownString = ApplyTemplate("headerdropdownitem", { "Shutdown", "shutdown", (const char*)u8"🛑" });
+        std::string restartString = ApplyTemplate("headerdropdownitem", { "Restart", "restart", (const char*)u8"♻️" });
 
-        std::string headerDropdown = ApplyTemplate("headerdropdown", { addString, configString, logString, shutdownString });
+        std::string headerDropdown = ApplyTemplate("headerdropdown", { addString, configString, logString, shutdownString, dvrlite->GetConfig().IsService() ? restartString : "" });
         return templates["headertop"].asString() + ApplyTemplate("headertitle", { pageTitle, headerDropdown });
     }
 

@@ -19,7 +19,9 @@ int main(int argc, const char* argv[])
 #endif
     uint16_t port = argc >= 4 ? std::stoi(argv[3]) : DVRLite::DVRLite::Config::Port;
 
-    DVRLite::DVRLite dvrlite = DVRLite::DVRLite(configPath, webPath, port);
+    bool isService = argc >= 5 ? std::string("service") == argv[4] : false;
+
+    DVRLite::DVRLite dvrlite = DVRLite::DVRLite(configPath, webPath, port, isService);
     DVRLite::MediaController::run(&dvrlite);
 
     return 0;
@@ -29,7 +31,7 @@ namespace DVRLite
 {
     using namespace Logger;
 
-    DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port) : config(configPath, webPath, port), cache(100000)
+    DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port, bool isService) : config(configPath, webPath, port, isService), cache(100000)
     {
         Logger::Init(config.GetLogPath());
         config.Load();
@@ -90,9 +92,10 @@ namespace DVRLite
         return config;
     }
 
-    DVRLite::Config::Config(const std::string& configPath, const std::string& webPath, uint16_t port) :
+    DVRLite::Config::Config(const std::string& configPath, const std::string& webPath, uint16_t port, bool isService) :
         configPath(configPath),
-        webPath(webPath)
+        webPath(webPath),
+        isService(isService)
     {
         Port = port;
     }
@@ -183,6 +186,11 @@ namespace DVRLite
     {
         std::lock_guard lock(configMutex);
         return Port;
+    }
+
+    bool DVRLite::Config::IsService()const
+    {
+        return isService;
     }
 
     void DVRLite::Config::SetPort(uint16_t port)

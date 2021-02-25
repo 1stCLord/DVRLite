@@ -23,11 +23,12 @@ namespace DVRLite
 			mutable std::mutex configMutex;
 			const std::string configPath;
 			std::string recordPath;
-			std::string webPath;
+			const std::string webPath;
 			Logger::LogFilter logFilter;
+			const bool isService;
 
 		public:
-			Config(const std::string& configPath, const std::string& webPath, uint16_t port);
+			Config(const std::string& configPath, const std::string& webPath, uint16_t port, bool isService);
 
 			void Load();
 			void Save() const;
@@ -41,6 +42,7 @@ namespace DVRLite
 			void SetPort(uint16_t port);
 			void SetLogFilter(Logger::LogFilter filter);
 			uint16_t GetPort()const;
+			bool IsService()const;
 
 			static uint16_t Port;
 		};
@@ -48,7 +50,7 @@ namespace DVRLite
 		using SourceSet = std::unordered_set <Source, Source::Hash>;
 
 
-		DVRLite(const std::string& configPath = "config.json", const std::string& webPath = "web/", uint16_t port = 8000);
+		DVRLite(const std::string& configPath = "config.json", const std::string& webPath = "web/", uint16_t port = 8000, bool isService = false);
 
 		void AddSource(const Source& source);
 		void RemoveSource(const std::string& source);

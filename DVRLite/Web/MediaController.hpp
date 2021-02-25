@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <filesystem>
 #include <iostream>
+#include <cstdlib>
 
 #include "DVRLite.h"
 
@@ -214,6 +215,24 @@ namespace DVRLite
 
         };
 
+        ENDPOINT_ASYNC("GET", "shutdown", Restart)
+        {
+
+            ENDPOINT_ASYNC_INIT(Restart)
+
+                Action act() override
+            {
+                controller->server->stop();
+#ifdef _WIN32
+                system("sc start \"DVRLite\"");
+#else
+                system("sudo systemctrl restart DVRLite");
+#endif
+                return _return(controller->createResponse(Status::CODE_200, "ok"));
+            }
+
+        };
+
         ENDPOINT_ASYNC("GET", "shutdown", Shutdown)
         {
 
@@ -222,6 +241,7 @@ namespace DVRLite
                 Action act() override
             {
                 controller->server->stop();
+
                 return _return(controller->createResponse(Status::CODE_200, "ok"));
             }
 
