@@ -215,7 +215,7 @@ namespace DVRLite
 
         };
 
-        ENDPOINT_ASYNC("GET", "shutdown", Restart)
+        ENDPOINT_ASYNC("GET", "restart", Restart)
         {
 
             ENDPOINT_ASYNC_INIT(Restart)
