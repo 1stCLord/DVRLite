@@ -46,7 +46,8 @@ namespace DVRLite
         std::string CreateLog() const; 
         std::string CreateSnapshot(const Source& source) const;
 
-        uint32_t VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
+        uint32_t NumberVideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
+        std::vector<Json::Value*> VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
 
         void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const;
         std::string ApplyTemplate(const std::string& templatename, const std::string& value) const;

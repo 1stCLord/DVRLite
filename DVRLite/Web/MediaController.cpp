@@ -113,11 +113,11 @@ namespace DVRLite
             std::chrono::system_clock::time_point hour = now - std::chrono::hours(1);
             std::chrono::system_clock::time_point day = now - std::chrono::hours(24);
             std::chrono::system_clock::time_point month = now - std::chrono::hours(24 * 30);
-            std::vector<std::string> hourSourceLinkParameters{ std::to_string(VideosBetweenDates(source, hour, now)), source.GetName(), to_string(hour, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            std::vector<std::string> hourSourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, hour, now)), source.GetName(), to_string(hour, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
             sourcedata += ApplyTemplate("sourcelink", hourSourceLinkParameters);
-            std::vector<std::string> daySourceLinkParameters{ std::to_string(VideosBetweenDates(source, day, now)), source.GetName(), to_string(day, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            std::vector<std::string> daySourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, day, now)), source.GetName(), to_string(day, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
             sourcedata += ApplyTemplate("sourcelink", daySourceLinkParameters);
-            std::vector<std::string> monthSourceLinkParameters{ std::to_string(VideosBetweenDates(source, month, now)), source.GetName(), to_string(month, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            std::vector<std::string> monthSourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, month, now)), source.GetName(), to_string(month, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
             sourcedata += ApplyTemplate("sourcelink", monthSourceLinkParameters);
             std::string triggers;
             for (const std::string& trigger : source.GetTriggers())
@@ -155,42 +155,62 @@ namespace DVRLite
         return ApplyTemplate("videosnapshot", source.GetAuthSnapshotAddress());
     }
 
-    uint32_t MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
+    uint32_t MediaController::NumberVideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
     {
+        return VideosBetweenDates(source, from, to).size();
+    }
+
+    std::vector<Json::Value*> MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
+    {
+        std::vector<Json::Value*> result;
         std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
         videoDirectory = videoDirectory / source.GetName();
         JsonCache& cache = dvrlite->GetCache();
         cache.Preload(videoDirectory);
 
-        //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + " & " + to_string(to, DATESTRINGFORMATQUOTES));
         Log(filter, "VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + std::to_string(from.time_since_epoch().count()) + " & " + to_string(to, DATESTRINGFORMATQUOTES) + std::to_string(to.time_since_epoch().count()));
-        int i = 0;
         if (std::filesystem::is_directory(videoDirectory))
         {
-            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
+            std::pair<int, int> yearRange = calculate_year_range(from, to);
+            for (int year = yearRange.first; year <= yearRange.second; ++year)
             {
-                if (entry.path().extension() == ".json")
+                std::pair<int, int> monthRange = calculate_month_range(from, to, year);
+                for(int month = monthRange.first; month <= monthRange.second; ++month)
                 {
-                    Json::Value* jsonptr = cache.Get(entry.path().string());
-                    if (jsonptr != nullptr)
+                    std::pair<int, int> dayRange = calculate_day_range(from, to, year, month);
+                    for (int day = dayRange.first; day <= dayRange.second; ++day)
                     {
-                        Json::Value& json = *jsonptr;
-                        std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
-                        std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
-                        //DVRLite::Log("VideosBetweenDates - source " + source.GetName() + " compare " + json["startTime"].asString() + " & " + json["endTime"].asString());
-                        if (endTimepoint > from && startTimepoint < to)
+                        std::string foldername = std::to_string(year) + '/' + std::to_string(month) + '-' + std::to_string(day);
+                        if (std::filesystem::is_directory(foldername))
                         {
-                            ++i;
-                            Log(filter, "    VideosBetweenDates - source " + source.GetName() + " matched " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
+                            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(foldername))
+                            {
+                                if (entry.path().extension() == ".json")
+                                {
+                                    Json::Value* jsonptr = cache.Get(entry.path().string());
+                                    if (jsonptr != nullptr)
+                                    {
+                                        Json::Value& json = *jsonptr;
+                                        std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
+                                        std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+
+                                        if (endTimepoint > from && startTimepoint < to)
+                                        {
+                                            result.push_back(jsonptr);
+                                            Log(filter, "    VideosBetweenDates - source " + source.GetName() + " matched " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
+                                        }
+                                        else
+                                            Log(filter, "    VideosBetweenDates - source " + source.GetName() + " didn't match " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
+                                    }
+                                }
+                            }
                         }
-                        else
-                            Log(filter, "    VideosBetweenDates - source " + source.GetName() + " didn't match " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
                     }
                 }
             }
         }
-        Log(filter, "VideosBetweenDates - source " + source.GetName() + " found " + std::to_string(i));
-        return i;
+        Log(filter, "VideosBetweenDates - source " + source.GetName() + " found " + std::to_string(result.size()));
+        return result;
     }
 
     std::string MediaController::CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date, const std::string &id) const

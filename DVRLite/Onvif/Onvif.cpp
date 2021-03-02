@@ -49,6 +49,7 @@ namespace DVRLite
 				{
 					std::filesystem::path directory = recordPath;
 					directory.append(source.GetName());
+					directory.append(to_string(std::chrono::system_clock::now(), std::string(DATEFOLDERFORMAT)));
 					std::filesystem::create_directories(directory);
 					std::string filename = to_string(std::chrono::system_clock::now(), std::string(DATEFILEFORMAT) + ".mp4");
 					if (ffmpeg)

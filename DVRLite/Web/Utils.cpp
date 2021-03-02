@@ -211,9 +211,89 @@ namespace DVRLite
         else
             fixedTimeString = timeString;
 
-        std::tm tm;
+        std::tm tm = {};
         std::stringstream(fixedTimeString) >> std::get_time(&tm, format.c_str());
         return std::chrono::system_clock::from_time_t(timegm(&tm));
+    }
+
+    bool is_year_in_date_range(const std::string &yearString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
+    {
+        uint32_t year;
+        try
+        {
+            year = std::stoi(yearString) - 1900;
+        }
+        catch (...) { return false; }
+
+        std::time_t ttfrom = std::chrono::system_clock::to_time_t(from);
+        std::time_t ttto = std::chrono::system_clock::to_time_t(to);
+        std::tm tmfrom = *std::gmtime(&ttfrom);
+        std::tm tmto = *std::gmtime(&ttto);
+
+        return year >= tmfrom.tm_year && year <= tmto.tm_year;
+    }
+
+    bool is_day_in_date_range(const std::string& dayString, const std::string& formatString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
+    {
+        std::tm tm = {};
+        std::stringstream(dayString) >> std::get_time(&tm, formatString.c_str());
+        if (tm.tm_year == 0 || tm.tm_mday == 0) return false;
+        
+        std::time_t ttfrom = std::chrono::system_clock::to_time_t(from);
+        std::time_t ttto = std::chrono::system_clock::to_time_t(to);
+        std::tm tmfrom = *std::gmtime(&ttfrom);
+        std::tm tmto = *std::gmtime(&ttto);
+
+        return (tm.tm_year >= tmfrom.tm_year && tm.tm_year <= tmto.tm_year) && 
+               (tm.tm_mon >= tmfrom.tm_mon && tm.tm_mon <= tmto.tm_mon) &&
+               (tm.tm_mday >= tmfrom.tm_mday && tm.tm_mday <= tmto.tm_mday);
+    }
+
+    std::pair<int, int> calculate_year_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
+    {
+        std::time_t fromtt = std::chrono::system_clock::to_time_t(from);
+        std::tm fromtm = *std::gmtime(&fromtt);
+
+        std::time_t tott = std::chrono::system_clock::to_time_t(to);
+        std::tm totm = *std::gmtime(&tott);
+
+        return {1900+fromtm.tm_year, 1900+totm.tm_year};
+    }
+
+    std::pair<int, int> calculate_month_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear)
+    {
+        std::time_t fromtt = std::chrono::system_clock::to_time_t(from);
+        std::tm fromtm = *std::gmtime(&fromtt);
+
+        std::time_t tott = std::chrono::system_clock::to_time_t(to);
+        std::tm totm = *std::gmtime(&tott);
+
+        std::pair<int, int> result;
+        result.first = 0;
+        if (currentYear == fromtm.tm_year + 1900)
+            result.first = fromtm.tm_mon;
+        result.second = 11;
+        if (currentYear == totm.tm_year + 1900)
+            result.second = totm.tm_mon;
+        return result;
+    }
+
+    std::pair<int, int> calculate_day_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, int currentMonth)
+    {
+        std::time_t fromtt = std::chrono::system_clock::to_time_t(from);
+        std::tm fromtm = *std::gmtime(&fromtt);
+
+        std::time_t tott = std::chrono::system_clock::to_time_t(to);
+        std::tm totm = *std::gmtime(&tott);
+
+        std::pair<int, int> result;
+        result.first = 1;
+        if ((currentYear == fromtm.tm_year + 1900) && (currentMonth == fromtm.tm_mon))
+            result.first = fromtm.tm_mday;
+        result.second = 31;
+        if ((currentYear == totm.tm_year + 1900) && (currentMonth == totm.tm_mon))
+            result.second = totm.tm_mday;
+        return result;
     }
 
     //video filename format yyyymmdd-hh-mm-ss
