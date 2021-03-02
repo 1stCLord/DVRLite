@@ -180,7 +180,12 @@ namespace DVRLite
                     std::pair<int, int> dayRange = calculate_day_range(from, to, year, month);
                     for (int day = dayRange.first; day <= dayRange.second; ++day)
                     {
-                        std::string foldername = std::to_string(year) + '/' + std::to_string(month) + '-' + std::to_string(day);
+                        std::string monthstr = std::string(2, '0');
+                        sprintf(monthstr.data(), "%02d", month);
+                        std::string daystr = std::string(2, '0');
+                        sprintf(daystr.data(), "%02d", day);
+
+                        std::string foldername = std::to_string(year) + '/' + monthstr + '-' + daystr;
                         if (std::filesystem::is_directory(foldername))
                         {
                             for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(foldername))
