@@ -13,7 +13,7 @@
 "sourcedata" : "<td>{}</td>",
 "sourcelink" : "<td><a href=\"videolist.html?source={1}&startTime={2}&endTime={3}\">{0}</a></td>",
 "sourcetoolelement":"<td>📝️ <a href=\"add.html?source={}\">Edit</a><br>🗑️ <a href=\"delete_source?source={}\">Delete</a></td>",
-"sourcecheckboxes":"<input id=\"{0}\" name=\"{0}\" type=\"checkbox\" {2}>{1}</br>",
+"sourcecheckboxes":"<input id=\"{0}\" name=\"{0}\" type=\"checkbox\" {2}>{1}<br>",
 "sourcesnapshotlink":"<td><div>📹 <a href=\"snapshot.html?source={}\">{}</a></div></td>",
 "sourcesnapshot":"<script  type='text/javascript'>var interval = setInterval(\"reloadImg('snapshot', '{}')\", 300);</script><img class=playback id='snapshot' src='' />",
 
@@ -27,6 +27,7 @@
 "form":"<form action={0} method=\"get\"><table class=\"sourcetable configtable\">{1}</table></form>",
 
 "typedrecord":" <tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} type={3} value={2} {4}></td></tr>",
+"checkboxrecord":" <tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} type=checkbox {2}></td></tr>",
 "checkboxrecordelement":"<label for={0}>{1}</label><input id={0} name={0} type=checkbox {2} {3}><br>",
 "submitrecord":"<tr class=sourcerecord><td></td><td><input type=\"submit\"></td></tr>",
 "customrecord":"<tr class=sourcerecord><td><label>{0}</label></td><td style=\"text-align:right\">{1}</td></tr>"

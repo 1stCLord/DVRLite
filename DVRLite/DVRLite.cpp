@@ -58,6 +58,12 @@ namespace DVRLite
     {
         Log(LogFilter::DVRLite, "Adding source " + source.GetUsername());
         std::pair<SourceSet::iterator, bool> result = sources.insert(source);
+        if (!result.second)
+        {
+            sources.erase(result.first);
+            result = sources.insert(source);
+        }
+
         const Source& ourSource = *(result.first);
         ffmpegs[source.GetName()] = std::make_unique<FFmpeg>(ourSource, this);
         onvif.Add(ourSource);

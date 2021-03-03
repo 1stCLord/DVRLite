@@ -15,7 +15,6 @@ namespace DVRLite
         using StringKeyLabel = oatpp::data::share::StringKeyLabel;
         using MatchMapPair = std::pair<StringKeyLabel, StringKeyLabel>;
 
-        Json::Value source;
         name = queryParams.get("name")->std_str();
         onvifAddress = queryParams.get("onvifAddress")->std_str();
         onvifAddress = createFullOnvifPath(unescapeUrl(onvifAddress));
@@ -51,8 +50,7 @@ namespace DVRLite
         recordVideo = recordVideoString == "on";
 
         std::stringstream jsonString;
-        jsonString << source;
-        Log(filter, "Source Created:\n " + jsonString.str());
+        Log(filter, "Source Created:\n");
     }
 
     void Source::Save(const std::filesystem::path& path) const

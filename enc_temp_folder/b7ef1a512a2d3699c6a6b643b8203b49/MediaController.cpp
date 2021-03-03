@@ -121,7 +121,7 @@ namespace DVRLite
             sourcedata += ApplyTemplate("sourcelink", monthSourceLinkParameters);
             std::string triggers;
             for (const std::string& trigger : source.GetTriggers())
-                triggers += trigger + "<br>";
+                triggers += trigger + "</br>";
             sourcedata += ApplyTemplate("sourcedata", triggers);
             sourcedata += ApplyTemplate("sourcetoolelement", source.GetName());
 
@@ -306,7 +306,7 @@ namespace DVRLite
     std::string MediaController::CreateConfigList() const
     {
         std::string configlist;
-        std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", "'" + dvrlite->GetConfig().GetRecordPath() + "'", "text", "required" };
+        std::vector<std::string> recordParameters{ "\"recordPath\"", "Record Path ", dvrlite->GetConfig().GetRecordPath(), "text", "required" };
         configlist = ApplyTemplate("typedrecord", recordParameters);
         std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "number", "" };
         configlist += ApplyTemplate("typedrecord", portParameters);
