@@ -269,12 +269,12 @@ namespace DVRLite
         std::tm totm = *std::gmtime(&tott);
 
         std::pair<int, int> result;
-        result.first = 0;
+        result.first = 1;
         if (currentYear == fromtm.tm_year + 1900)
-            result.first = fromtm.tm_mon;
-        result.second = 11;
+            result.first = fromtm.tm_mon + 1;
+        result.second = 12;
         if (currentYear == totm.tm_year + 1900)
-            result.second = totm.tm_mon;
+            result.second = totm.tm_mon + 1;
         return result;
     }
 
@@ -288,10 +288,10 @@ namespace DVRLite
 
         std::pair<int, int> result;
         result.first = 1;
-        if ((currentYear == fromtm.tm_year + 1900) && (currentMonth == fromtm.tm_mon))
+        if ((currentYear == fromtm.tm_year + 1900) && (currentMonth == fromtm.tm_mon+1))
             result.first = fromtm.tm_mday;
         result.second = 31;
-        if ((currentYear == totm.tm_year + 1900) && (currentMonth == totm.tm_mon))
+        if ((currentYear == totm.tm_year + 1900) && (currentMonth == totm.tm_mon+1))
             result.second = totm.tm_mday;
         return result;
     }

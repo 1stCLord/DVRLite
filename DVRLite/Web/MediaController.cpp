@@ -186,9 +186,10 @@ namespace DVRLite
                         sprintf(daystr.data(), "%02d", day);
 
                         std::string foldername = std::to_string(year) + '/' + monthstr + '-' + daystr;
-                        if (std::filesystem::is_directory(foldername))
+                        std::filesystem::path folderpath = videoDirectory / foldername;
+                        if (std::filesystem::is_directory(folderpath))
                         {
-                            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(foldername))
+                            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(folderpath))
                             {
                                 if (entry.path().extension() == ".json")
                                 {
