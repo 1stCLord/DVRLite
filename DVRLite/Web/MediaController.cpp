@@ -358,9 +358,9 @@ namespace DVRLite
         std::string addsourcetable;
         std::vector<std::string> nameParameters{ "\"name\"", "Name ", source.GetName(), "text", "required" };
         addsourcetable += ApplyTemplate("typedrecord", nameParameters);
-        std::vector<std::string> addressParameters{ "\"onvifAddress\"", "Address ", source.GetOnvifAddress(), "url", "required" };
+        std::vector<std::string> addressParameters{ "\"onvifAddress\"", "Address ", "'" + source.GetOnvifAddress() + "'", "url", "required" };
         addsourcetable += ApplyTemplate("typedrecord", addressParameters);
-        std::vector<std::string> videoAddressParameters{ "\"customVideoAddress\"", "Custom Video Address (optional) ", source.GetVideoAddress(), "url", "" };
+        std::vector<std::string> videoAddressParameters{ "\"customVideoAddress\"", "Custom Video Address (optional) ", "'" + source.GetVideoAddress() + "'", "url", "" };
         addsourcetable += ApplyTemplate("typedrecord", videoAddressParameters);
         std::vector<std::string> usernameParameters{ "\"username\"", "Username ", source.GetUsername(), "text", "required" };
         addsourcetable += ApplyTemplate("typedrecord", usernameParameters);
