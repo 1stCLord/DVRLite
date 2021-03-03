@@ -251,7 +251,8 @@ namespace DVRLite
                     if (i > 1)
                         videotimeline += ",";
 
-                    std::filesystem::path videofile = video.first.filename().replace_extension(".mp4");
+                    std::filesystem::path relative_path = video.first.string().substr(videoDirectory.string().length());
+                    std::filesystem::path videofile = relative_path.replace_extension(".mp4");
                     std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
                     videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
                 }
