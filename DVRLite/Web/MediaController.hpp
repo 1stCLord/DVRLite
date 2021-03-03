@@ -23,11 +23,13 @@ namespace DVRLite
     {
     public:
         typedef MediaController __ControllerType;
+        using VideoCacheEntry = std::pair<std::filesystem::path, Json::Value*>;
     private:
         OATPP_COMPONENT(std::shared_ptr<StaticFilesManager>, staticFileManager);
         DVRLite* dvrlite;
         oatpp::network::Server* server = nullptr;
         static const Logger::LogFilter filter = Logger::LogFilter::Web;
+
     private:
         std::shared_ptr<OutgoingResponse> getStaticFileResponse(const oatpp::String& filename, const oatpp::String& rangeHeader) const;
         std::shared_ptr<OutgoingResponse> getFullFileResponse(const oatpp::String& file) const;
@@ -36,7 +38,7 @@ namespace DVRLite
         std::string CreateHTMLHeader(const std::string& pageTitle) const;
         std::string CreateHeader(const std::string& pageTitle) const;
         std::string CreateSourceList() const;
-        std::string CreateVideoList(const Source& source) const;
+        //std::string CreateVideoList(const Source& source) const;
         std::string CreateVideoSnapshot(const Source& source) const;
         std::string CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date, const std::string& id) const;
         std::string CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
@@ -47,7 +49,7 @@ namespace DVRLite
         std::string CreateSnapshot(const Source& source) const;
 
         uint32_t NumberVideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
-        std::vector<Json::Value*> VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
+        std::vector<VideoCacheEntry> VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
 
         void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const;
         std::string ApplyTemplate(const std::string& templatename, const std::string& value) const;

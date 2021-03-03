@@ -131,7 +131,7 @@ namespace DVRLite
         return sourcelist;
     }
 
-    std::string MediaController::CreateVideoList(const Source& source) const
+    /*std::string MediaController::CreateVideoList(const Source& source) const
     {
         std::string videolist;
         std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
@@ -148,7 +148,7 @@ namespace DVRLite
             }
         }
         return videolist;
-    }
+    }*/
 
     std::string MediaController::CreateVideoSnapshot(const Source& source) const
     {
@@ -160,9 +160,9 @@ namespace DVRLite
         return VideosBetweenDates(source, from, to).size();
     }
 
-    std::vector<Json::Value*> MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
+    std::vector<MediaController::VideoCacheEntry> MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
     {
-        std::vector<Json::Value*> result;
+        std::vector<VideoCacheEntry> result;
         std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
         videoDirectory = videoDirectory / source.GetName();
         JsonCache& cache = dvrlite->GetCache();
@@ -202,7 +202,7 @@ namespace DVRLite
 
                                         if (endTimepoint > from && startTimepoint < to)
                                         {
-                                            result.push_back(jsonptr);
+                                            result.push_back({ entry.path(), jsonptr });
                                             Log(filter, "    VideosBetweenDates - source " + source.GetName() + " matched " + json["startTime"].asString() + std::to_string(startTimepoint.time_since_epoch().count()) + " & " + json["endTime"].asString() + "(" + std::to_string(endTimepoint.time_since_epoch().count()) + ")");
                                         }
                                         else
@@ -237,7 +237,27 @@ namespace DVRLite
         std::string pickers = CreateDatePicker("From: ", from, "fromDatePicker");
         pickers += CreateDatePicker("To: ", to, "toDatePicker");
 
-        if (std::filesystem::is_directory(videoDirectory))
+        std::vector<std::pair<std::filesystem::path, Json::Value *>> videos = VideosBetweenDates(source, from, to);
+        int i = 1;
+        for (MediaController::VideoCacheEntry video : videos)
+        {
+            if (video.second != nullptr)
+            {
+                Json::Value& json = *video.second;
+                std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
+                std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                if (endTimepoint > from && startTimepoint < to)
+                {
+                    if (i > 1)
+                        videotimeline += ",";
+
+                    std::filesystem::path videofile = video.first.filename().replace_extension(".mp4");
+                    std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
+                    videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
+                }
+            }
+        }
+        /*if (std::filesystem::is_directory(videoDirectory))
         {
             int i = 1;
             for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
@@ -262,7 +282,7 @@ namespace DVRLite
                     }
                 }
             }
-        }
+        }*/
         std::vector<std::string> groupParameters{ std::to_string(groupIndex), '\'' + source.GetName() + '\'' };
         std::string videoGroups = ApplyTemplate("videotimelinegroup", groupParameters);
         std::vector<std::string> timelineParameters{ pickers, videotimeline, videoGroups };
@@ -386,8 +406,8 @@ namespace DVRLite
             replace_substring(content, "#header#", CreateHeader(pageTitle), content);
         if (content.find("#sourcelist#") != std::string::npos)
             replace_substring(content, "#sourcelist#", CreateSourceList(), content);
-        if (content.find("#videolist#") != std::string::npos)
-            replace_substring(content, "#videolist#", CreateVideoList(currentSource), content);
+        /*if (content.find("#videolist#") != std::string::npos)
+            replace_substring(content, "#videolist#", CreateVideoList(currentSource), content);*/
         if (content.find("#videosnapshot#") != std::string::npos)
             replace_substring(content, "#videosnapshot#", CreateVideoSnapshot(currentSource), content);
         if (content.find("#videotimeline#") != std::string::npos)
