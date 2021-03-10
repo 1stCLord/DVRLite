@@ -42,6 +42,7 @@ namespace DVRLite
         std::string CreateVideoSnapshot(const Source& source) const;
         std::string CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date, const std::string& id) const;
         std::string CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
+        std::string CreateThemeDropdown() const;
         std::string CreateSourceCheckboxes(const Source& source) const;
         std::string CreateConfigList() const;
         std::string CreateAddSourceTable(const Source& source) const;
@@ -54,6 +55,7 @@ namespace DVRLite
         void ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const;
         std::string ApplyTemplate(const std::string& templatename, const std::string& value) const;
         std::string ApplyTemplate(const std::string& templatename, const std::vector<std::string>& value) const;
+        std::string ApplyTheme(const std::string&themeFilename, const std::string& styleFilename) const;
 
         Json::Value templates;
 
@@ -62,6 +64,7 @@ namespace DVRLite
 
         void setDVR(DVRLite* dvrlite) { this->dvrlite = dvrlite; }
         void LoadTemplates();
+        Json::Value LoadJson(const std::string &filename) const;
 
         static void GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime);
         static Logger::LogFilter GetLogFilter(const QueryParams& queryParams);
@@ -163,11 +166,13 @@ namespace DVRLite
             {
                 QueryParams queryParams = request->getQueryParameters();
                 std::string recordPath = queryParams.get("recordPath")->std_str();
-                uint16_t port = std::stoul(queryParams.get("port")->std_str());
+                uint16_t port = (uint16_t)std::stoul(queryParams.get("port")->std_str());
+                std::string theme = queryParams.get("theme")->std_str();
                 Logger::LogFilter logFilter = MediaController::GetLogFilter(queryParams);
                 DVRLite::Config& config = controller->dvrlite->GetConfig();
                 config.SetRecordPath(unescapeUrl(recordPath));
                 config.SetPort(port);
+                config.SetTheme(theme);
                 config.SetLogFilter(logFilter);
                 config.Save();
                 auto response = controller->createResponse(Status::CODE_302, "");
@@ -260,6 +265,23 @@ namespace DVRLite
                 auto range = request->getHeader(Header::RANGE);
                 std::string webPath = controller->dvrlite->GetConfig().GetWebPath() + "favicon.png";
                 return _return(controller->getStaticFileResponse(oatpp::String(webPath.c_str()), range));
+
+            }
+
+        };
+
+        ENDPOINT_ASYNC("GET", "style.css", StyleCss)
+        {
+
+            ENDPOINT_ASYNC_INIT(StyleCss)
+
+                Action act() override
+            {
+                auto range = request->getHeader(Header::RANGE);
+                //std::string webPath = controller->dvrlite->GetConfig().GetWebPath() + "style.css";
+                std::string style = controller->ApplyTheme("style.css", controller->dvrlite->GetConfig().GetTheme() + ".json");
+                return _return(controller->createResponse(Status::CODE_200, style.c_str()));
+                //return _return(controller->getStaticFileResponse(oatpp::String(webPath.c_str()), range));
 
             }
 

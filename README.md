@@ -18,7 +18,7 @@ Roadmap:
 -  implement live video
 -  implement edit source ✔
 -  maybe implement watchdog (doesn't seem to be needed)
--  multiple themes
+-  multiple themes ✔
 -  shutdown/restart ✔
 
 ![alt text](https://github.com/TheSombreroKid/DVRLite/blob/master/dvrlite.png?raw=true)

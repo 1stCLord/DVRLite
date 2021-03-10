@@ -97,6 +97,22 @@ namespace DVRLite
         return millis.count();
     }
 
+    std::string stdLoadFile(const std::filesystem::path& filePath)
+    {
+        std::ifstream fileStream = std::ifstream(filePath);
+
+        std::string contents;
+        if (fileStream.is_open())
+        {
+            fileStream.seekg(0, std::ios::end);
+            size_t length = fileStream.tellg();
+            fileStream.seekg(0, std::ios::beg);
+            contents = std::string(length, 0);
+            fileStream.read(contents.data(), length);
+        }
+        return contents;
+    }
+
     std::string escapeUrl(const std::string& url)
     {
         static_assert("TODO");
@@ -126,6 +142,15 @@ namespace DVRLite
         std::string result;
         replace_substring(source, tag, replacement, result);
         return result;
+    }
+
+    void replace_all_substrings(const std::string& source, const std::string& tag, const std::string& replacement, std::string& result)
+    {
+        bool found = true;
+        while (found)
+        {
+            found = replace_substring(result, tag, replacement, result);
+        }
     }
 
     bool replace_substring(const std::string& source, const std::string& tag, const std::string& replacement, std::string& result)
@@ -218,7 +243,7 @@ namespace DVRLite
 
     bool is_year_in_date_range(const std::string &yearString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
     {
-        uint32_t year;
+        int32_t year;
         try
         {
             year = std::stoi(yearString) - 1900;

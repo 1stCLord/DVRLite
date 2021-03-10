@@ -3,7 +3,7 @@
 
 "headertop": "<a href=\"/\"><h1>DVRLite</h1></a>",
 "headertitle" : "<hr><div class=header><h2>{0}</h2>{1}</div><hr>",
-"headerdropdown":"<div class=headermenu>{0}<select id='headerdropdown' class=headerdropdown><option selected hidden disabled>🔽 Settings</option>{1}{2}{3}{4}</select></div>",
+"headerdropdown":"<div class=headermenu>{0}<select id='headerdropdown' class=headerdropdown><option selected hidden disabled>🔽 {1}</option>{2}</select></div>",
 "headermenuitem":"<div class=headermenuitem>{2} <a href=\"{1}\">{0}</a></div>",
 "headerdropdownitem":"<option href=\"{1}\" class=headerdropdownitem>{2} {0}</option>",
 
@@ -30,5 +30,8 @@
 "checkboxrecord":" <tr class=sourcerecord><td><label for={0}>{1}</label></td><td><input id={0} name={0} type=checkbox {2}></td></tr>",
 "checkboxrecordelement":"<label for={0}>{1}</label><input id={0} name={0} type=checkbox {2} {3}><br>",
 "submitrecord":"<tr class=sourcerecord><td></td><td><input type=\"submit\"></td></tr>",
-"customrecord":"<tr class=sourcerecord><td><label>{0}</label></td><td style=\"text-align:right\">{1}</td></tr>"
+"customrecord":"<tr class=sourcerecord><td><label>{0}</label></td><td style=\"text-align:right\">{1}</td></tr>",
+
+"dropdown":"<select id={0} name={0} class=headerdropdown>{1}</select>",
+"dropdownitem":"<option class=headerdropdownitem {1}>{0}</option>"
 }

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include <chrono>
+#include <filesystem>
 
 //#define VIDEOLIST_TAG "#videolist#"
 //#define ROOT_PATH "F:/Projects/DVRLite/web/"
@@ -33,8 +34,11 @@ namespace DVRLite
 	oatpp::String formatText(const char* text, ...);
 	v_int64 getMillisTickCount();
 
+	std::string stdLoadFile(const std::filesystem::path& filePath);
+
 	std::string escapeUrl(const std::string& url);
 	std::string unescapeUrl(const std::string& url);
+	void replace_all_substrings(const std::string& source, const std::string& tag, const std::string& replacement, std::string& result);
 	std::string replace_substring(const std::string& source, const std::string& tag, const std::string& replacement);
 	bool replace_substring(const std::string& source, const std::string& tag, const std::string& replacement, std::string& result);
 	bool split_string(const std::string& source, char token, std::string* first, std::string* second);

@@ -93,7 +93,7 @@ namespace DVRLite
         std::string shutdownString = ApplyTemplate("headerdropdownitem", { "Shutdown", "shutdown", (const char*)u8"🛑" });
         std::string restartString = ApplyTemplate("headerdropdownitem", { "Restart", "restart", (const char*)u8"♻️" });
 
-        std::string headerDropdown = ApplyTemplate("headerdropdown", { addString, configString, logString, shutdownString, dvrlite->GetConfig().IsService() ? restartString : "" });
+        std::string headerDropdown = ApplyTemplate("headerdropdown", { addString, "Settings", configString + logString + shutdownString + (dvrlite->GetConfig().IsService() ? restartString : "") });
         return templates["headertop"].asString() + ApplyTemplate("headertitle", { pageTitle, headerDropdown });
     }
 
@@ -157,7 +157,7 @@ namespace DVRLite
 
     uint32_t MediaController::NumberVideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
     {
-        return VideosBetweenDates(source, from, to).size();
+        return (uint32_t)VideosBetweenDates(source, from, to).size();
     }
 
     std::vector<MediaController::VideoCacheEntry> MediaController::VideosBetweenDates(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
@@ -258,32 +258,7 @@ namespace DVRLite
                 }
             }
         }
-        /*if (std::filesystem::is_directory(videoDirectory))
-        {
-            int i = 1;
-            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(videoDirectory))
-            {
-                if (entry.path().extension() == ".json")
-                {
-                    Json::Value* jsonptr = cache.Get(entry.path().string());
-                    if (jsonptr != nullptr)
-                    {
-                        Json::Value& json = *jsonptr;
-                        std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
-                        std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
-                        if (endTimepoint > from && startTimepoint < to)
-                        {
-                            if (i > 1)
-                                videotimeline += ",";
 
-                            std::filesystem::path videofile = entry.path().filename().replace_extension(".mp4");
-                            std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
-                            videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
-                        }
-                    }
-                }
-            }
-        }*/
         std::vector<std::string> groupParameters{ std::to_string(groupIndex), '\'' + source.GetName() + '\'' };
         std::string videoGroups = ApplyTemplate("videotimelinegroup", groupParameters);
         std::vector<std::string> timelineParameters{ pickers, videotimeline, videoGroups };
@@ -303,6 +278,25 @@ namespace DVRLite
         return sourcecheckboxes;
     }
 
+    std::string MediaController::CreateThemeDropdown() const
+    {
+        std::string result;
+        std::filesystem::path themepath(dvrlite->GetConfig().GetWebPath() + "themes");
+
+        std::string currentTheme = dvrlite->GetConfig().GetTheme();
+
+        for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(themepath))
+        {
+            if (entry.path().extension() == ".json")
+            {
+                std::string selectedString = entry.path().stem().string() == currentTheme ? "selected" : "";
+                result += ApplyTemplate("dropdownitem", { entry.path().stem().string(), selectedString});
+            }
+        }
+
+        return ApplyTemplate("dropdown", { "theme", result });
+    }
+
     std::string MediaController::CreateConfigList() const
     {
         std::string configlist;
@@ -310,7 +304,8 @@ namespace DVRLite
         configlist = ApplyTemplate("typedrecord", recordParameters);
         std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "number", "" };
         configlist += ApplyTemplate("typedrecord", portParameters);
-        
+        configlist += ApplyTemplate("customrecord", { "Theme", CreateThemeDropdown() });
+
         std::string loglist = ApplyTemplate("checkboxrecordelement", { "\"logDVRLite\"", "DVRLite ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::DVRLite)?checkedOn:checkedOff, "" });
         loglist += ApplyTemplate("checkboxrecordelement", { "\"logOnvif\"", "Onvif ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::Onvif) ? checkedOn : checkedOff, "" });
         loglist += ApplyTemplate("checkboxrecordelement", { "\"logPullPointSubscription\"", "PullPointSubscription ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::PullPointSubscription) ? checkedOn : checkedOff, "" });
@@ -390,15 +385,24 @@ namespace DVRLite
         for (int i = 0; i < values.size(); ++i)
         {
             std::string tag = '{' + std::to_string(i) + '}';
-            bool found = true;
-            while (found)
-            {
-                std::string value = values[i];
-                //if (value.empty())value = "\"\"";
-                found = replace_substring(result, tag, value, result);
-            }
+            replace_all_substrings(result, tag, values[i], result);
         }
         return result;
+    }
+
+    std::string MediaController::ApplyTheme(const std::string& styleFilename, const std::string& themeFilename) const
+    {
+        Json::Value theme = LoadJson("themes/" + themeFilename);
+        std::filesystem::path stylePath = std::filesystem::path(dvrlite->GetConfig().GetWebPath()) / styleFilename;
+        std::string style = stdLoadFile(stylePath);
+
+        for (Json::Value key : theme.getMemberNames())
+        {
+            std::string keyName = key.asString();
+            replace_all_substrings(style, '#' + keyName + '#', theme[keyName].asString(), style);
+        }
+
+        return style;
     }
 
     void MediaController::ApplyTemplates(const std::string& pageTitle, std::string& content, const Source& currentSource, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const
@@ -432,12 +436,19 @@ namespace DVRLite
 
     void MediaController::LoadTemplates()
     {
+        templates = LoadJson("templates.json");
+    }
+
+    Json::Value MediaController::LoadJson(const std::string& filename ) const
+    {
+        Json::Value result;
         std::string webPath = dvrlite->GetConfig().GetWebPath();
-        std::ifstream file(std::filesystem::path(webPath) / "templates.json");
+        std::ifstream file(std::filesystem::path(webPath) / filename);
         if (file.is_open())
         {
-            file >> templates;
+            file >> result;
         }
+        return result;
     }
 
     void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime)

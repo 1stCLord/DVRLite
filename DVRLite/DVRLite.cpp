@@ -123,6 +123,10 @@ namespace DVRLite
                 uint16_t port = config["port"].asUInt();
                 if (port != 0)
                     Port = port;
+                std::string newTheme = config["theme"].asString();
+                if (newTheme.empty())
+                    theme = "default";
+                else theme = newTheme;
                 logFilter = static_cast<LogFilter>(config["logFilter"].asUInt());
                 Filter(logFilter);
 
@@ -139,6 +143,7 @@ namespace DVRLite
         {
             std::lock_guard lock(configMutex);
             source["recordPath"] = recordPath;
+            source["theme"] = theme;
             source["port"] = Port;
             source["logFilter"] = static_cast<uint16_t>(logFilter);
         }
@@ -182,6 +187,12 @@ namespace DVRLite
         return (std::filesystem::path(configPath).parent_path() / "log.txt").string();
     }
 
+    std::string DVRLite::Config::GetTheme() const
+    {
+        std::lock_guard lock(configMutex);
+        return theme;
+    }
+
     Logger::LogFilter DVRLite::Config::GetLogFilter() const
     {
         std::lock_guard lock(configMutex);
@@ -197,6 +208,12 @@ namespace DVRLite
     bool DVRLite::Config::IsService()const
     {
         return isService;
+    }
+
+    void DVRLite::Config::SetTheme(const std::string &theme)
+    {
+        std::lock_guard lock(configMutex);
+        this->theme = theme;
     }
 
     void DVRLite::Config::SetPort(uint16_t port)

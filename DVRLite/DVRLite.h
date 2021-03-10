@@ -24,6 +24,7 @@ namespace DVRLite
 			const std::string configPath;
 			std::string recordPath;
 			const std::string webPath;
+			std::string theme;
 			Logger::LogFilter logFilter;
 			const bool isService;
 
@@ -38,8 +39,10 @@ namespace DVRLite
 			std::string GetWebPath() const;
 			std::string GetSourcePath() const;
 			std::string GetLogPath() const;
+			std::string GetTheme() const;
 			Logger::LogFilter GetLogFilter() const;
 			void SetPort(uint16_t port);
+			void SetTheme(const std::string &theme);
 			void SetLogFilter(Logger::LogFilter filter);
 			uint16_t GetPort()const;
 			bool IsService()const;

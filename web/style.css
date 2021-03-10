@@ -1,22 +1,22 @@
-body {background-color: DimGray;}
+body {background-color: #bg#;}
 h1
 {
 	font-size: 18pt;
 	text-shadow: 1px 1px black;
-	color: Aquamarine;
+	color: #text#;
 }
 h2
 {
 	margin:4pt;
 	font-size: 14pt;
 	text-shadow: 1px 1px black;
-	color: Aquamarine;
+	color: #text#;
 	flex:2;
 }
 
-a{color:BurlyWood;}
-a:visited{color:DarkSalmon;}
-hr{border-top: 3px solid DarkSlateGrey;}
+a{color:#dropdown#;}
+a:visited{color:#highlight#;}
+hr{border-top: 3px solid #cellbg#;}
 
 .header
 {
@@ -34,16 +34,16 @@ hr{border-top: 3px solid DarkSlateGrey;}
 .headerdropdown
 {
 	background:transparent;
-	color:BurlyWood;
+	color:#dropdown#;
 	border-style:solid;
-	border-color:DarkSlateGrey;
+	border-color:#cellbg#;
 	appearance: none;
 }
 
 .headerdropdownitem
 {
-	background-color:DarkSlateGrey;
-	color:BurlyWood;
+	background-color:#cellbg#;
+	color:#dropdown#;
 }
 
 .headermenuitem
@@ -54,14 +54,14 @@ hr{border-top: 3px solid DarkSlateGrey;}
 .sourcetable
 {
 	width:100%;
-	background-color:black;
+	background-color:#tablebg#;
 }
 
 .sourcerecord, .sourceheaderrecord
 {
 	font-size:14pt;
-	color:tomato;
-	background-color: DarkSlateGrey;
+	color:#tabletext#;
+	background-color: #cellbg#;
 }
 
 .configtable
@@ -71,7 +71,7 @@ hr{border-top: 3px solid DarkSlateGrey;}
 
 .sourcerecord:hover
 {
-	background-color: lightgrey;
+	background-color: #tablehover#;
 }
 
 .vis-item .vis-item-overflow {
@@ -80,8 +80,8 @@ hr{border-top: 3px solid DarkSlateGrey;}
 
 .slidertext
 {
-	color:tomato;
-	background-color:DarkSlateGrey;
+	color:#tabletext#;
+	background-color:#cellbg#;
 	border: 1px solid;
 	padding: 1px;
 	margin-left:2px;
@@ -92,10 +92,10 @@ hr{border-top: 3px solid DarkSlateGrey;}
 	appearance: none;
 	width:40%;
 	height:25px;
-	background: Aquamarine;
+	background: #text#;
 	opacity: 0.7;
 	transition: opacity .2s;
-	border: 1px solid DarkSalmon;
+	border: 1px solid #highlight#;
 }
 .slider:hover {
   opacity: 1;
@@ -114,8 +114,8 @@ hr{border-top: 3px solid DarkSlateGrey;}
 	width:auto;
 	height:750px;
 	font-size:14pt;
-	color:tomato;
-	background-color: DarkSlateGrey;
+	color:#tabletext#;
+	background-color: #cellbg#;
 }
 
 .playback
