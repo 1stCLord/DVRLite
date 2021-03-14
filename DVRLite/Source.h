@@ -18,6 +18,7 @@ namespace DVRLite
 		std::string customVideoAddress;
 		std::string username;
 		std::string password;
+		std::string eventFilter;
 		uint16_t duration;
 		uint16_t quota;
 		bool recordAudio;
@@ -51,6 +52,7 @@ namespace DVRLite
 			customVideoAddress(other.customVideoAddress),
 			username(other.username),
 			password(other.password),
+			eventFilter(other.eventFilter),
 			duration(other.duration),
 			quota(other.quota),
 			recordAudio(other.recordAudio),
@@ -73,6 +75,7 @@ namespace DVRLite
 		std::string GetAuthSnapshotAddress()const;
 		std::string GetUsername()const;
 		std::string GetPassword()const;
+		std::string GetEventFilter()const;
 		uint16_t GetDuration()const;
 		uint16_t GetQuota()const;
 		bool GetRecordVideo() const;

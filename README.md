@@ -12,7 +12,7 @@ Roadmap:
 -  implement date selectors on video list ✔
 -  implement log filter ✔
 -  implement multiple source view
--  implement event message filter
+-  implement event message filter ✔
 -  implement quota reaping
 -  implement live snapshots ✔
 -  implement live video

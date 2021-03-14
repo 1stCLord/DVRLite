@@ -40,6 +40,7 @@ namespace DVRLite
             }
         }
 
+        eventFilter = queryParams.get("eventFilter")->std_str();
         std::string durationString = queryParams.get("duration")->std_str();
         duration = durationString.empty() ? 0 : std::stoi(durationString);
         std::string quotaString = queryParams.get("quota")->std_str();
@@ -66,6 +67,7 @@ namespace DVRLite
             source["triggers"] = Json::Value(Json::arrayValue);
             for (std::string trigger : triggers)
                 source["triggers"].append(trigger);
+            source["eventFilter"] = eventFilter;
             source["duration"] = duration;
             source["quota"] = quota;
             source["recordAudio"] = recordAudio;
@@ -98,6 +100,7 @@ namespace DVRLite
             password = source["password"].asString();
             for (Json::Value& triggerValue : source["triggers"])
                 triggers.insert(triggerValue.asString());
+            eventFilter = source["eventFilter"].asString();
             duration = source["duration"].asUInt();
             quota = source["quota"].asUInt();
             recordAudio = source["recordAudio"].asBool();
@@ -149,6 +152,12 @@ namespace DVRLite
     {
         std::lock_guard lock(sourceMutex);
         return password;
+    }
+
+    std::string Source::GetEventFilter()const
+    {
+        std::lock_guard lock(sourceMutex);
+        return eventFilter;
     }
 
     uint16_t Source::GetDuration()const

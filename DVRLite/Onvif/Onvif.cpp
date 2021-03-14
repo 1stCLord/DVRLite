@@ -41,24 +41,28 @@ namespace DVRLite
 		subscriptions.emplace_back(new PullPointSubscription(const_cast<Source&>(source), [source, this](const std::string& message)
 		{
 			Log(filter, "Alert " + source.GetName() + " - " + message);
-			for (const std::string& trigger : source.GetTriggers())
+			std::string eventFilter = source.GetEventFilter();
+			if (eventFilter.empty() || message.find(eventFilter) == std::string::npos)
 			{
-				FFmpeg* ffmpeg = dvrlite->GetFFmpeg(trigger);
-				std::string recordPath = dvrlite->GetConfig().GetRecordPath();
-				if (!recordPath.empty())
+				for (const std::string& trigger : source.GetTriggers())
 				{
-					std::filesystem::path directory = recordPath;
-					directory.append(source.GetName());
-					directory.append(to_string(std::chrono::system_clock::now(), std::string(DATEFOLDERFORMAT)));
-					std::filesystem::create_directories(directory);
-					std::string filename = to_string(std::chrono::system_clock::now(), std::string(DATEFILEFORMAT) + ".mp4");
-					if (ffmpeg)
-						ffmpeg->Record(std::chrono::seconds(source.GetDuration()), std::filesystem::path(directory.string()) / filename);
+					FFmpeg* ffmpeg = dvrlite->GetFFmpeg(trigger);
+					std::string recordPath = dvrlite->GetConfig().GetRecordPath();
+					if (!recordPath.empty())
+					{
+						std::filesystem::path directory = recordPath;
+						directory.append(source.GetName());
+						directory.append(to_string(std::chrono::system_clock::now(), std::string(DATEFOLDERFORMAT)));
+						std::filesystem::create_directories(directory);
+						std::string filename = to_string(std::chrono::system_clock::now(), std::string(DATEFILEFORMAT) + ".mp4");
+						if (ffmpeg)
+							ffmpeg->Record(std::chrono::seconds(source.GetDuration()), std::filesystem::path(directory.string()) / filename);
+						else
+							Log(filter, "No FFmpeg instance found " + source.GetName());
+					}
 					else
-						Log(filter, "No FFmpeg instance found " + source.GetName());
+						Log(filter, "Record Path Empty");
 				}
-				else
-					Log(filter, "Record Path Empty");
 			}
 		}));
 #if DEBUG_RECORD

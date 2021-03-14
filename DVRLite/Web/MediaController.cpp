@@ -364,6 +364,9 @@ namespace DVRLite
 
         addsourcetable += ApplyTemplate("customrecord", { "Sources to trigger ", CreateSourceCheckboxes(source) });
 
+        std::vector<std::string> filterParameters{ "\"eventFilter\"", "Event Filter (optional)", source.GetEventFilter(), "text", "" };
+        addsourcetable += ApplyTemplate("typedrecord", filterParameters);
+
         std::vector<std::string> durationParameters{ "\"duration\"", "Record duration (seconds) ", std::to_string(source.GetDuration()), "number", "" };
         addsourcetable += ApplyTemplate("typedrecord", durationParameters);
         std::vector<std::string> quotaParameters{ "\"quota\"", "Disk quota (mb) ", std::to_string(source.GetQuota()), "number", "" };
