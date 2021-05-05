@@ -20,5 +20,10 @@ Roadmap:
 -  maybe implement watchdog (doesn't seem to be needed)
 -  multiple themes ✔
 -  shutdown/restart ✔
+-  c++20 timezone support (once it's been added to the supported implementations)
+
+not definites
+-  add a more sophisticated post process zoned motion detection
+-  add a notification system
 
 ![alt text](https://github.com/TheSombreroKid/DVRLite/blob/master/dvrlite.png?raw=true)
