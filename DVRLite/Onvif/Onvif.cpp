@@ -48,13 +48,15 @@ namespace DVRLite
 				{
 					FFmpeg* ffmpeg = dvrlite->GetFFmpeg(trigger);
 					std::string recordPath = dvrlite->GetConfig().GetRecordPath();
+					//const std::chrono::time_zone& timezone = dvrlite->GetConfig().GetTimeZone();
+					const std::chrono::time_zone& timezone = *std::chrono::get_tzdb().locate_zone("UTC");
 					if (!recordPath.empty())
 					{
 						std::filesystem::path directory = recordPath;
 						directory.append(source.GetName());
-						directory.append(to_string(std::chrono::system_clock::now(), std::string(DATEFOLDERFORMAT)));
+						directory.append(to_string(std::chrono::system_clock::now(), std::string(DATEFOLDERFORMAT), timezone));
 						std::filesystem::create_directories(directory);
-						std::string filename = to_string(std::chrono::system_clock::now(), std::string(DATEFILEFORMAT) + ".mp4");
+						std::string filename = to_string(std::chrono::system_clock::now(), std::string(DATEFILEFORMAT) + ".mp4", timezone);
 						if (ffmpeg)
 							ffmpeg->Record(std::chrono::seconds(source.GetDuration()), std::filesystem::path(directory.string()) / filename);
 						else

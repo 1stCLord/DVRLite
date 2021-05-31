@@ -42,6 +42,7 @@ namespace DVRLite
         std::string CreateVideoSnapshot(const Source& source) const;
         std::string CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date, const std::string& id) const;
         std::string CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const;
+        std::string CreateTimezoneDropdown() const;
         std::string CreateThemeDropdown() const;
         std::string CreateSourceCheckboxes(const Source& source) const;
         std::string CreateConfigList() const;
@@ -66,7 +67,7 @@ namespace DVRLite
         void LoadTemplates();
         Json::Value LoadJson(const std::string &filename) const;
 
-        static void GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime);
+        static void GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime, const std::chrono::time_zone& timezone);
         static Logger::LogFilter GetLogFilter(const QueryParams& queryParams);
     public:
 
@@ -169,11 +170,17 @@ namespace DVRLite
                 uint16_t port = (uint16_t)std::stoul(queryParams.get("port")->std_str());
                 std::string theme = queryParams.get("theme")->std_str();
                 Logger::LogFilter logFilter = MediaController::GetLogFilter(queryParams);
+                std::string timezoneString = unescapeUrl(queryParams.get("timezone")->std_str());
+                std::chrono::time_zone const* timezone = std::chrono::get_tzdb().locate_zone(timezoneString);
+
+
                 DVRLite::Config& config = controller->dvrlite->GetConfig();
                 config.SetRecordPath(unescapeUrl(recordPath));
                 config.SetPort(port);
                 config.SetTheme(theme);
                 config.SetLogFilter(logFilter);
+                if(timezone!=nullptr)
+                    config.SetTimeZone(*timezone);
                 config.Save();
                 auto response = controller->createResponse(Status::CODE_302, "");
                 response->putHeader("Location", "/");
@@ -303,7 +310,8 @@ namespace DVRLite
                     file.replace_extension("");
 
                     std::chrono::system_clock::time_point startTime, endTime;
-                    MediaController::GetTimes(request->getQueryParameter("startTime"), request->getQueryParameter("endTime"), startTime, endTime);
+                    const std::chrono::time_zone& timezone = controller->dvrlite->GetConfig().GetTimeZone();
+                    MediaController::GetTimes(request->getQueryParameter("startTime"), request->getQueryParameter("endTime"), startTime, endTime, timezone);
 
                     oatpp::String sourcename = request->getQueryParameter("source");
                     std::string content = loadFromFile(filepath.c_str())->std_str();

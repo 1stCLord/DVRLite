@@ -45,22 +45,22 @@ namespace DVRLite
 
 	std::string createFullOnvifPath(const std::string& url);
 
-	std::string to_string(std::chrono::system_clock::time_point time, const std::string& format);
-	std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format, bool fixup = true);
-	bool is_year_in_date_range(const std::string& yearString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to);
-	bool is_day_in_date_range(const std::string& dayString, const std::string& formatString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to);
+	std::string to_string(std::chrono::system_clock::time_point time, const std::string& format, const std::chrono::time_zone &timezone);
+	std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format, const std::chrono::time_zone& timezone,  bool fixup = true);
+	bool is_year_in_date_range(const std::string& yearString, const std::chrono::time_zone& timezone, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to);
+	bool is_day_in_date_range(const std::string& dayString, const std::chrono::time_zone& timezone, const std::string& formatString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to);
 	std::string filename_to_datestring(const std::string& filename);
 
-	std::pair<int, int> calculate_year_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to);
-	std::pair<int, int> calculate_month_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear);
-	std::pair<int, int> calculate_day_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, int currentMonth);
+	std::pair<int, int> calculate_year_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, const std::chrono::time_zone& timezone);
+	std::pair<int, int> calculate_month_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, const std::chrono::time_zone& timezone);
+	std::pair<int, int> calculate_day_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, int currentMonth, const std::chrono::time_zone& timezone);
 
 	std::string strip_quotes(const std::string& quotedString, const std::string& refString);
 }
 
-#define DATESTRINGFORMAT "%Y-%m-%d %H:%M:%S"
-#define DATESTRINGFORMATQUOTES "'%Y-%m-%d %H:%M:%S'"
+#define DATESTRINGFORMAT "{:%Y-%m-%d %H:%M:%OS}"
+#define DATESTRINGFORMATQUOTES "'{:%Y-%m-%d %H:%M:%OS}'"
 #define DATEREFSTRING "YYYY-mm-dd HH:MM:SS"
-#define DATEFOLDERFORMAT "%Y/%m-%d"
-#define DATEFILEFORMAT "%H-%M-%S"
-#define DATEPICKERSTRINGFORMAT "%Y-%m-%d"
+#define DATEFOLDERFORMAT "{:%Y/%m-%d}"
+#define DATEFILEFORMAT "{:%H-%M-%OS}"
+#define DATEPICKERSTRINGFORMAT "{:%Y-%m-%d}"

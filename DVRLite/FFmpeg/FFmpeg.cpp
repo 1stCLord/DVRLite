@@ -125,8 +125,10 @@ namespace DVRLite
     void FFmpeg::WriteMetadata(const std::filesystem::path& path, std::chrono::system_clock::time_point startTime, std::chrono::system_clock::time_point endTime) const
     {
         Json::Value json;
-        json["startTime"] = to_string(startTime, DATESTRINGFORMAT);
-        json["endTime"] = to_string(endTime, DATESTRINGFORMAT);
+        //const std::chrono::time_zone &timezone = dvrlite->GetConfig().GetTimeZone();
+        const std::chrono::time_zone& timezone = *std::chrono::get_tzdb().locate_zone("UTC");
+        json["startTime"] = to_string(startTime, DATESTRINGFORMAT, timezone);
+        json["endTime"] = to_string(endTime, DATESTRINGFORMAT, timezone);
         dvrlite->GetCache().Put(path.string(), json);
         /*std::ofstream file(path);
         if(file.is_open())

@@ -33,8 +33,8 @@ namespace DVRLite
 
     DVRLite::DVRLite(const std::string& configPath, const std::string& webPath, uint16_t port, bool isService) : config(configPath, webPath, port, isService), cache(100000)
     {
-        Logger::Init(config.GetLogPath());
         config.Load();
+        Logger::Init(config.GetLogPath(), config.GetTimeZone());
 
         //load the sources
         if (std::filesystem::is_directory(config.GetSourcePath()))
@@ -101,7 +101,8 @@ namespace DVRLite
     DVRLite::Config::Config(const std::string& configPath, const std::string& webPath, uint16_t port, bool isService) :
         configPath(configPath),
         webPath(webPath),
-        isService(isService)
+        isService(isService),
+        timezone(std::chrono::get_tzdb().current_zone())
     {
         Port = port;
     }
@@ -127,6 +128,13 @@ namespace DVRLite
                 if (newTheme.empty())
                     theme = "default";
                 else theme = newTheme;
+
+                std::string newTimezone = config["timezone"].asString();
+                if (!newTimezone.empty())
+                    timezone = std::chrono::get_tzdb().locate_zone(newTimezone);
+                if(timezone == nullptr)
+                    timezone = std::chrono::get_tzdb().current_zone();
+
                 logFilter = static_cast<LogFilter>(config["logFilter"].asUInt());
                 Filter(logFilter);
 
@@ -145,10 +153,12 @@ namespace DVRLite
             source["recordPath"] = recordPath;
             source["theme"] = theme;
             source["port"] = Port;
+            source["timezone"] = std::string(timezone->name());
             source["logFilter"] = static_cast<uint16_t>(logFilter);
         }
         std::filesystem::path fullpath(configPath);
-        std::filesystem::create_directories(fullpath.parent_path());
+        if(!fullpath.parent_path().empty())
+            std::filesystem::create_directories(fullpath.parent_path());
         std::ofstream file(configPath);
         file << source;
 
@@ -208,6 +218,16 @@ namespace DVRLite
     bool DVRLite::Config::IsService()const
     {
         return isService;
+    }
+
+    const std::chrono::time_zone &DVRLite::Config::GetTimeZone() const
+    {
+        return *timezone;
+    }
+
+    void DVRLite::Config::SetTimeZone(const std::chrono::time_zone& timezone)
+    {
+        this->timezone = &timezone;
     }
 
     void DVRLite::Config::SetTheme(const std::string &theme)

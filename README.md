@@ -17,10 +17,10 @@ Roadmap:
 -  implement live snapshots ✔
 -  implement live video
 -  implement edit source ✔
--  maybe implement watchdog (doesn't seem to be needed)
+-  maybe implement watchdog (doesn't seem to be needed) ❌
 -  multiple themes ✔
 -  shutdown/restart ✔
--  c++20 timezone support (once it's been added to the supported implementations)
+-  c++20 timezone support (once it's been added to the supported implementations) ✔
 
 not definites
 -  add a more sophisticated post process zoned motion detection

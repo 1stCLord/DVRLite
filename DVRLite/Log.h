@@ -1,6 +1,7 @@
 #pragma once	
 #include <atomic>
 #include <string>
+#include <chrono>
 
 namespace DVRLite::Logger
 {
@@ -32,7 +33,7 @@ namespace DVRLite::Logger
 		return (filter & includes) != LogFilter::None;
 	}
 
-	void Init(const std::string& path);
+	void Init(const std::string& path, const std::chrono::time_zone& in_timezone);
 	void Filter(LogFilter filter);
 	void Log(LogFilter filter, const std::string& logline);
 }

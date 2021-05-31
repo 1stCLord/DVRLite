@@ -217,107 +217,131 @@ namespace DVRLite
         return scheme + domainOrIp + port + endpoint;
     }
 
-    std::string to_string(std::chrono::system_clock::time_point time, const std::string& format)
+    std::string to_string(std::chrono::system_clock::time_point time, const std::string& format, const std::chrono::time_zone& timezone)
     {
-        std::time_t tt = std::chrono::system_clock::to_time_t(time);
-        std::tm tm = *std::gmtime(&tt); //GMT (UTC)
-        std::stringstream ss;
-        ss << std::put_time(&tm, format.c_str());
-        return ss.str();
+        std::chrono::zoned_time zoned_time(&timezone, time);
+        std::chrono::local_time<std::chrono::system_clock::duration> local_time = zoned_time.get_local_time();
+
+        return std::format(format, zoned_time);
     }
 #ifdef _WIN32
 #define timegm _mkgmtime
 #endif
-    std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format, bool fixup)
+    std::chrono::system_clock::time_point to_timepoint(const std::string& timeString, const std::string& format, const std::chrono::time_zone& timezone, bool fixup)
     {
+        //strip the lib fmt tokens
+        std::string tmpFmt = format.substr(2, format.size() - 3);
         std::string fixedTimeString;
         if (fixup)
             fixedTimeString = replace_substring(timeString, "+", " ");
         else
             fixedTimeString = timeString;
 
-        std::tm tm = {};
-        std::stringstream(fixedTimeString) >> std::get_time(&tm, format.c_str());
-        return std::chrono::system_clock::from_time_t(timegm(&tm));
+        std::chrono::local_time<std::chrono::system_clock::duration> local_time;
+        //std::chrono::system_clock::time_point time;
+        std::stringstream stream(fixedTimeString);
+        std::chrono::from_stream(stream, tmpFmt.c_str(), local_time);
+        std::chrono::zoned_time zoned_time(&timezone, local_time);
+        return zoned_time.get_sys_time();
+        //return time;
     }
 
-    bool is_year_in_date_range(const std::string &yearString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
+
+    bool is_year_in_date_range(const std::string &yearString, const std::chrono::time_zone& timezone, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
     {
         int32_t year;
         try
         {
-            year = std::stoi(yearString) - 1900;
+            year = std::stoi(yearString);
         }
         catch (...) { return false; }
 
-        std::time_t ttfrom = std::chrono::system_clock::to_time_t(from);
-        std::time_t ttto = std::chrono::system_clock::to_time_t(to);
-        std::tm tmfrom = *std::gmtime(&ttfrom);
-        std::tm tmto = *std::gmtime(&ttto);
+        std::chrono::zoned_time from_zoned_time(&timezone, from);
+        std::chrono::zoned_time to_zoned_time(&timezone, to);
 
-        return year >= tmfrom.tm_year && year <= tmto.tm_year;
+        std::chrono::local_days from_local_days = std::chrono::floor<std::chrono::days>(from_zoned_time.get_local_time());
+        std::chrono::year_month_day from_ymd(from_local_days);
+
+        std::chrono::local_days to_local_days = std::chrono::floor<std::chrono::days>(to_zoned_time.get_local_time());
+        std::chrono::year_month_day to_ymd(to_local_days);
+
+        return year >= (int)from_ymd.year() && year <= (int)to_ymd.year();
     }
 
-    bool is_day_in_date_range(const std::string& dayString, const std::string& formatString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
+    bool is_day_in_date_range(const std::string& dayString, const std::chrono::time_zone& timezone, const std::string& formatString, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
     {
-        std::tm tm = {};
-        std::stringstream(dayString) >> std::get_time(&tm, formatString.c_str());
-        if (tm.tm_year == 0 || tm.tm_mday == 0) return false;
-        
-        std::time_t ttfrom = std::chrono::system_clock::to_time_t(from);
-        std::time_t ttto = std::chrono::system_clock::to_time_t(to);
-        std::tm tmfrom = *std::gmtime(&ttfrom);
-        std::tm tmto = *std::gmtime(&ttto);
 
-        return (tm.tm_year >= tmfrom.tm_year && tm.tm_year <= tmto.tm_year) && 
-               (tm.tm_mon >= tmfrom.tm_mon && tm.tm_mon <= tmto.tm_mon) &&
-               (tm.tm_mday >= tmfrom.tm_mday && tm.tm_mday <= tmto.tm_mday);
+        std::chrono::zoned_time from_zoned_time(&timezone, from);
+        std::chrono::zoned_time to_zoned_time(&timezone, to);
+
+        std::chrono::local_days from_local_days = std::chrono::floor<std::chrono::days>(from_zoned_time.get_local_time());
+        std::chrono::year_month_day from_ymd(from_local_days);
+
+        std::chrono::local_days to_local_days = std::chrono::floor<std::chrono::days>(to_zoned_time.get_local_time());
+        std::chrono::year_month_day to_ymd(to_local_days);
+
+        std::chrono::local_time<std::chrono::system_clock::duration> local_time;
+        std::stringstream stream(dayString);
+        std::chrono::from_stream(stream, formatString.c_str(), local_time);
+        std::chrono::zoned_time zoned_time(&timezone, local_time);
+        std::chrono::local_days local_days = std::chrono::floor<std::chrono::days>(zoned_time.get_local_time());
+        std::chrono::year_month_day ymd(local_days);
+
+        return ymd >= from_ymd && ymd <= to_ymd;
     }
 
-    std::pair<int, int> calculate_year_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to)
+    std::pair<int, int> calculate_year_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, const std::chrono::time_zone& timezone)
     {
-        std::time_t fromtt = std::chrono::system_clock::to_time_t(from);
-        std::tm fromtm = *std::gmtime(&fromtt);
+        std::chrono::zoned_time from_zoned_time(&timezone, from);
+        std::chrono::zoned_time to_zoned_time(&timezone, to);
 
-        std::time_t tott = std::chrono::system_clock::to_time_t(to);
-        std::tm totm = *std::gmtime(&tott);
+        std::chrono::local_days from_local_days = std::chrono::floor<std::chrono::days>(from_zoned_time.get_local_time());
+        std::chrono::year_month_day from_ymd(from_local_days);
 
-        return {1900+fromtm.tm_year, 1900+totm.tm_year};
+        std::chrono::local_days to_local_days = std::chrono::floor<std::chrono::days>(to_zoned_time.get_local_time());
+        std::chrono::year_month_day to_ymd(to_local_days);
+        return { (int)from_ymd.year(), (int)to_ymd.year() };
     }
 
-    std::pair<int, int> calculate_month_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear)
+    std::pair<int, int> calculate_month_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, const std::chrono::time_zone& timezone)
     {
-        std::time_t fromtt = std::chrono::system_clock::to_time_t(from);
-        std::tm fromtm = *std::gmtime(&fromtt);
+        std::chrono::zoned_time from_zoned_time(&timezone, from);
+        std::chrono::zoned_time to_zoned_time(&timezone, to);
 
-        std::time_t tott = std::chrono::system_clock::to_time_t(to);
-        std::tm totm = *std::gmtime(&tott);
+        std::chrono::local_days from_local_days = std::chrono::floor<std::chrono::days>(from_zoned_time.get_local_time());
+        std::chrono::year_month_day from_ymd(from_local_days);
+
+        std::chrono::local_days to_local_days = std::chrono::floor<std::chrono::days>(to_zoned_time.get_local_time());
+        std::chrono::year_month_day to_ymd(to_local_days);
 
         std::pair<int, int> result;
         result.first = 1;
-        if (currentYear == fromtm.tm_year + 1900)
-            result.first = fromtm.tm_mon + 1;
+        if (currentYear == (int)from_ymd.year())
+            result.first = (uint32_t)from_ymd.month();
         result.second = 12;
-        if (currentYear == totm.tm_year + 1900)
-            result.second = totm.tm_mon + 1;
+        if (currentYear == (int)to_ymd.year())
+            result.second = (uint32_t)to_ymd.month();
         return result;
     }
 
-    std::pair<int, int> calculate_day_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, int currentMonth)
+    std::pair<int, int> calculate_day_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, int currentMonth, const std::chrono::time_zone& timezone)
     {
-        std::time_t fromtt = std::chrono::system_clock::to_time_t(from);
-        std::tm fromtm = *std::gmtime(&fromtt);
+        std::chrono::zoned_time from_zoned_time(&timezone, from);
+        std::chrono::zoned_time to_zoned_time(&timezone, to);
 
-        std::time_t tott = std::chrono::system_clock::to_time_t(to);
-        std::tm totm = *std::gmtime(&tott);
+        std::chrono::local_days from_local_days = std::chrono::floor<std::chrono::days>(from_zoned_time.get_local_time());
+        std::chrono::year_month_day from_ymd(from_local_days);
+
+        std::chrono::local_days to_local_days = std::chrono::floor<std::chrono::days>(to_zoned_time.get_local_time());
+        std::chrono::year_month_day to_ymd(to_local_days);
 
         std::pair<int, int> result;
         result.first = 1;
-        if ((currentYear == fromtm.tm_year + 1900) && (currentMonth == fromtm.tm_mon+1))
-            result.first = fromtm.tm_mday;
+        if ((currentYear == (int)from_ymd.year()) && (currentMonth == (uint32_t)from_ymd.month()))
+            result.first = (uint32_t)from_ymd.day();
         result.second = 31;
-        if ((currentYear == totm.tm_year + 1900) && (currentMonth == totm.tm_mon+1))
-            result.second = totm.tm_mday;
+        if ((currentYear == (int)to_ymd.year()) && (currentMonth == (uint32_t)to_ymd.month()))
+            result.second = (uint32_t)to_ymd.day();
         return result;
     }
 

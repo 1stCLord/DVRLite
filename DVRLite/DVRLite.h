@@ -27,6 +27,7 @@ namespace DVRLite
 			std::string theme;
 			Logger::LogFilter logFilter;
 			const bool isService;
+			const std::chrono::time_zone *timezone;
 
 		public:
 			Config(const std::string& configPath, const std::string& webPath, uint16_t port, bool isService);
@@ -46,6 +47,8 @@ namespace DVRLite
 			void SetLogFilter(Logger::LogFilter filter);
 			uint16_t GetPort()const;
 			bool IsService()const;
+			const std::chrono::time_zone &GetTimeZone() const;
+			void SetTimeZone(const std::chrono::time_zone& timezone);
 
 			static uint16_t Port;
 		};

@@ -99,6 +99,8 @@ namespace DVRLite
 
     std::string MediaController::CreateSourceList() const
     {
+        const std::chrono::time_zone& timezone = dvrlite->GetConfig().GetTimeZone();
+
         std::string sourcelist;
         sourcelist += templates["sourceheader"].asString();
         for (const Source& source : dvrlite->GetSources())
@@ -113,11 +115,11 @@ namespace DVRLite
             std::chrono::system_clock::time_point hour = now - std::chrono::hours(1);
             std::chrono::system_clock::time_point day = now - std::chrono::hours(24);
             std::chrono::system_clock::time_point month = now - std::chrono::hours(24 * 30);
-            std::vector<std::string> hourSourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, hour, now)), source.GetName(), to_string(hour, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            std::vector<std::string> hourSourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, hour, now)), source.GetName(), to_string(hour, DATESTRINGFORMATQUOTES, timezone), to_string(now, DATESTRINGFORMATQUOTES, timezone) };
             sourcedata += ApplyTemplate("sourcelink", hourSourceLinkParameters);
-            std::vector<std::string> daySourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, day, now)), source.GetName(), to_string(day, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            std::vector<std::string> daySourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, day, now)), source.GetName(), to_string(day, DATESTRINGFORMATQUOTES, timezone), to_string(now, DATESTRINGFORMATQUOTES, timezone) };
             sourcedata += ApplyTemplate("sourcelink", daySourceLinkParameters);
-            std::vector<std::string> monthSourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, month, now)), source.GetName(), to_string(month, DATESTRINGFORMATQUOTES), to_string(now, DATESTRINGFORMATQUOTES) };
+            std::vector<std::string> monthSourceLinkParameters{ std::to_string(NumberVideosBetweenDates(source, month, now)), source.GetName(), to_string(month, DATESTRINGFORMATQUOTES, timezone), to_string(now, DATESTRINGFORMATQUOTES, timezone) };
             sourcedata += ApplyTemplate("sourcelink", monthSourceLinkParameters);
             std::string triggers;
             for (const std::string& trigger : source.GetTriggers())
@@ -168,16 +170,19 @@ namespace DVRLite
         JsonCache& cache = dvrlite->GetCache();
         cache.Preload(videoDirectory);
 
-        Log(filter, "VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES) + std::to_string(from.time_since_epoch().count()) + " & " + to_string(to, DATESTRINGFORMATQUOTES) + std::to_string(to.time_since_epoch().count()));
+        //const std::chrono::time_zone& timezone = dvrlite->GetConfig().GetTimeZone();
+        const std::chrono::time_zone& timezone = *std::chrono::get_tzdb().locate_zone("UTC");
+
+        Log(filter, "VideosBetweenDates - source " + source.GetName() + " listing videos between " + to_string(from, DATESTRINGFORMATQUOTES, timezone) + std::to_string(from.time_since_epoch().count()) + " & " + to_string(to, DATESTRINGFORMATQUOTES, timezone) + std::to_string(to.time_since_epoch().count()));
         if (std::filesystem::is_directory(videoDirectory))
         {
-            std::pair<int, int> yearRange = calculate_year_range(from, to);
+            std::pair<int, int> yearRange = calculate_year_range(from, to, timezone);
             for (int year = yearRange.first; year <= yearRange.second; ++year)
             {
-                std::pair<int, int> monthRange = calculate_month_range(from, to, year);
+                std::pair<int, int> monthRange = calculate_month_range(from, to, year, timezone);
                 for(int month = monthRange.first; month <= monthRange.second; ++month)
                 {
-                    std::pair<int, int> dayRange = calculate_day_range(from, to, year, month);
+                    std::pair<int, int> dayRange = calculate_day_range(from, to, year, month, timezone);
                     for (int day = dayRange.first; day <= dayRange.second; ++day)
                     {
                         std::string monthstr = std::string(2, '0');
@@ -197,8 +202,8 @@ namespace DVRLite
                                     if (jsonptr != nullptr)
                                     {
                                         Json::Value& json = *jsonptr;
-                                        std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
-                                        std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                                        std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT, timezone);
+                                        std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT, timezone);
 
                                         if (endTimepoint > from && startTimepoint < to)
                                         {
@@ -221,7 +226,8 @@ namespace DVRLite
 
     std::string MediaController::CreateDatePicker(const std::string& label, std::chrono::system_clock::time_point date, const std::string &id) const
     {
-        return ApplyTemplate("videotimelinedatepicker", { label, to_string(date, DATEPICKERSTRINGFORMAT), id });
+        const std::chrono::time_zone& timezone = dvrlite->GetConfig().GetTimeZone();
+        return ApplyTemplate("videotimelinedatepicker", { label, to_string(date, DATEPICKERSTRINGFORMAT, timezone), id });
     }
 
     std::string MediaController::CreateVideoTimeline(const Source& source, std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to) const
@@ -237,6 +243,9 @@ namespace DVRLite
         std::string pickers = CreateDatePicker("From: ", from, "fromDatePicker");
         pickers += CreateDatePicker("To: ", to, "toDatePicker");
 
+        const std::chrono::time_zone& timezone = dvrlite->GetConfig().GetTimeZone();
+        const std::chrono::time_zone& utc_timezone = *std::chrono::get_tzdb().locate_zone("UTC");
+
         std::vector<std::pair<std::filesystem::path, Json::Value *>> videos = VideosBetweenDates(source, from, to);
         int i = 1;
         for (MediaController::VideoCacheEntry video : videos)
@@ -244,16 +253,20 @@ namespace DVRLite
             if (video.second != nullptr)
             {
                 Json::Value& json = *video.second;
-                std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT);
-                std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT);
+                std::chrono::system_clock::time_point startTimepoint = to_timepoint(json["startTime"].asString(), DATESTRINGFORMAT, utc_timezone);
+                std::chrono::system_clock::time_point endTimepoint = to_timepoint(json["endTime"].asString(), DATESTRINGFORMAT, utc_timezone);
+                std::string start_local_time_string = to_string(startTimepoint, DATESTRINGFORMAT, timezone);
+                std::string end_local_time_string = to_string(endTimepoint, DATESTRINGFORMAT, timezone);
                 if (endTimepoint > from && startTimepoint < to)
                 {
                     if (i > 1)
                         videotimeline += ",";
 
-                    std::filesystem::path relative_path = video.first.string().substr(videoDirectory.string().length());
+                    std::string videopath = video.first.string().substr(videoDirectory.string().length());
+                    replace_all_substrings(videopath, "\\", "/", videopath);
+                    std::filesystem::path relative_path = videopath;
                     std::filesystem::path videofile = relative_path.replace_extension(".mp4");
-                    std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + json["startTime"].asString() + '\'', '\'' + json["endTime"].asString() + '\'' };
+                    std::vector<std::string> videoParameters{ std::to_string(i++), '\'' + videofile.string() + '\'', std::to_string(groupIndex), '\'' + source.GetName() + '\'', '\'' + start_local_time_string + '\'', '\'' + end_local_time_string + '\'' };
                     videotimeline += ApplyTemplate("videotimelineelement", videoParameters);
                 }
             }
@@ -276,6 +289,21 @@ namespace DVRLite
         for (const Source& source : dvrlite->GetSources())
             sourcecheckboxes += ApplyTemplate("sourcecheckboxes", { "trigger_" + source.GetName(), source.GetName(), triggers.contains(source.GetName()) ? checkedOn : checkedOff });
         return sourcecheckboxes;
+    }
+
+    std::string MediaController::CreateTimezoneDropdown() const
+    {
+        std::string result;
+
+        std::string_view currentTimezone = dvrlite->GetConfig().GetTimeZone().name();
+
+        for(const std::chrono::time_zone &timezone : std::chrono::get_tzdb().zones)
+        {
+            std::string selectedString = timezone.name() == currentTimezone ? "selected" : "";
+            result += ApplyTemplate("dropdownitem", { std::string(timezone.name()), selectedString });
+        }
+
+        return ApplyTemplate("dropdown", { "timezone", result });
     }
 
     std::string MediaController::CreateThemeDropdown() const
@@ -305,6 +333,7 @@ namespace DVRLite
         std::vector<std::string> portParameters{ "\"port\"", "Port ", std::to_string(dvrlite->GetConfig().GetPort()), "number", "" };
         configlist += ApplyTemplate("typedrecord", portParameters);
         configlist += ApplyTemplate("customrecord", { "Theme", CreateThemeDropdown() });
+        configlist += ApplyTemplate("customrecord", { "Time Zone", CreateTimezoneDropdown() });
 
         std::string loglist = ApplyTemplate("checkboxrecordelement", { "\"logDVRLite\"", "DVRLite ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::DVRLite)?checkedOn:checkedOff, "" });
         loglist += ApplyTemplate("checkboxrecordelement", { "\"logOnvif\"", "Onvif ", Has(dvrlite->GetConfig().GetLogFilter(), LogFilter::Onvif) ? checkedOn : checkedOff, "" });
@@ -454,7 +483,7 @@ namespace DVRLite
         return result;
     }
 
-    void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime)
+    void MediaController::GetTimes(oatpp::String inStartTime, oatpp::String inEndTime, std::chrono::system_clock::time_point& startTime, std::chrono::system_clock::time_point& endTime, const std::chrono::time_zone& timezone)
     {
         bool inStartTimeEmpty = inStartTime.get() == nullptr || inStartTime.get()->getSize() == 0;
         bool inEndTimeEmpty = inEndTime.get() == nullptr || inEndTime.get()->getSize() == 0;
@@ -466,18 +495,18 @@ namespace DVRLite
         }
         else if (inStartTimeEmpty)
         {
-            endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+            endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT, timezone);
             startTime = endTime - std::chrono::hours(24);
         }
         else if (inEndTimeEmpty)
         {
-            startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+            startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT, timezone);
             endTime = startTime + std::chrono::hours(24);
         }
         else
         {
-            startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
-            endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT);
+            startTime = to_timepoint(strip_quotes(unescapeUrl(inStartTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT, timezone);
+            endTime = to_timepoint(strip_quotes(unescapeUrl(inEndTime->std_str()), DATEREFSTRING), DATESTRINGFORMAT, timezone);
         }
     }
 
