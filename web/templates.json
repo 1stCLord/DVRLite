@@ -2,7 +2,7 @@
 "htmlheader":"<head><meta charset=\"UTF-8\"><title>DVRLite</title><link rel=\"stylesheet\" href=\"style.css\"><link rel=\"icon\" type=\"image/png\" href=\"favicon.png\" />{}</head>",
 
 "headertop": "<a href=\"/\"><h1>DVRLite</h1></a>",
-"headertitle" : "<hr><div class=header><h2>{0}</h2>{1}</div><hr>",
+"headertitle" : "<hr><div class=header><h2>{0}</h2><div class=data>{1}</div>{2}</div><hr>",
 "headerdropdown":"<div class=headermenu>{0}<select id='headerdropdown' class=headerdropdown><option selected hidden disabled>🔽 {1}</option>{2}</select></div>",
 "headermenuitem":"<div class=headermenuitem>{2} <a href=\"{1}\">{0}</a></div>",
 "headerdropdownitem":"<option href=\"{1}\" class=headerdropdownitem>{2} {0}</option>",
@@ -14,7 +14,7 @@
 "sourcelink" : "<td><a href=\"videolist.html?source={1}&startTime={2}&endTime={3}\">{0}</a></td>",
 "sourcetoolelement":"<td>📝️ <a href=\"add.html?source={}\">Edit</a><br>🗑️ <a href=\"delete_source?source={}\">Delete</a></td>",
 "sourcecheckboxes":"<input id=\"{0}\" name=\"{0}\" type=\"checkbox\" {2}>{1}<br>",
-"sourcesnapshotlink":"<td><div>📹 <a href=\"snapshot.html?source={}\">{}</a></div></td>",
+"sourcesnapshotlink":"<td><div><input id={} name={} type=checkbox>📹 <a href=\"snapshot.html?source={}\">{}</a></div></td>",
 "sourcesnapshot":"<script  type='text/javascript'>var interval = setInterval(\"reloadImg('snapshot', '{}')\", 300);</script><img class=playback id='snapshot' src='' />",
 
 "videosnapshot":"<img style=\"width:60%;display:block;margin-left:auto;margin-right:auto\" src=\"{}\"><br>",

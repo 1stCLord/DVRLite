@@ -56,6 +56,8 @@ namespace DVRLite
 	std::pair<int, int> calculate_day_range(std::chrono::system_clock::time_point from, std::chrono::system_clock::time_point to, int currentYear, int currentMonth);
 
 	std::string strip_quotes(const std::string& quotedString, const std::string& refString);
+
+	std::string bytes_to_string(uintmax_t bytes);
 }
 
 #define DATESTRINGFORMAT "%Y-%m-%d %H:%M:%S"
