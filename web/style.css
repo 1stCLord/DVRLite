@@ -38,6 +38,7 @@ hr{border-top: 3px solid #cellbg#;}
 	border-style:solid;
 	border-color:#cellbg#;
 	appearance: none;
+	height: 24px;
 }
 
 .headerdropdownitem
@@ -106,6 +107,20 @@ hr{border-top: 3px solid #cellbg#;}
 	margin-right:24px;
 }
 
+.data
+{
+	padding:2px 5px;
+	overflow: auto;
+	width:auto;
+	height:auto;
+	border:1px;
+	border-style:solid;
+	border-radius:4px;
+	margin:2px 5px;
+	font-size:12pt;
+	color:#tabletext#;
+	background-color: #bg#;
+}
 
 .log
 {

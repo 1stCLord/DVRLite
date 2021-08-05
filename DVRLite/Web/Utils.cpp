@@ -364,4 +364,17 @@ namespace DVRLite
         else return quotedString;
     }
 
+    std::string bytes_to_string(uintmax_t bytes)
+    {
+        const std::vector<std::string> suffixes{ "B", "KB", "MB", "GB", "TB", "PB" };
+
+        int magnitude = 0;
+        while (bytes > 1024 && magnitude < suffixes.size())
+        {
+            bytes /= 1024;
+            ++magnitude;
+        }
+        return std::to_string(bytes) + suffixes[magnitude];
+    }
+
 }
