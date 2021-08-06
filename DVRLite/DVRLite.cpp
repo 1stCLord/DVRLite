@@ -88,6 +88,23 @@ namespace DVRLite
         return cache;
     }
 
+    uintmax_t DVRLite::GetVideoDirectorySize()
+    {
+        std::filesystem::path videoDirectory = GetConfig().GetRecordPath();
+        std::filesystem::file_time_type newVideoDirectoryWriteTime = std::filesystem::last_write_time(videoDirectory);
+        if (newVideoDirectoryWriteTime > videoDirectoryWriteTime)
+        {
+            videoDirectoryWriteTime = newVideoDirectoryWriteTime;
+            videoDirectorySize = 0;
+            for (const std::filesystem::directory_entry& directory_entry : std::filesystem::recursive_directory_iterator(videoDirectory))
+            {
+                if (std::filesystem::is_regular_file(directory_entry))
+                    videoDirectorySize += directory_entry.file_size();
+            }
+        }
+        return videoDirectorySize;
+    }
+
     DVRLite::Config& DVRLite::GetConfig()
     {
         return config;

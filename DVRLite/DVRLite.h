@@ -67,6 +67,8 @@ namespace DVRLite
 
 		JsonCache& GetCache();
 
+		uintmax_t GetVideoDirectorySize();
+
 		Config& GetConfig();
 		const Config& GetConfig() const;
 	private:
@@ -77,5 +79,8 @@ namespace DVRLite
 		Config config;
 		Onvif onvif;
 		JsonCache cache;
+
+		uintmax_t videoDirectorySize;
+		std::filesystem::file_time_type videoDirectoryWriteTime;
 	};
 }

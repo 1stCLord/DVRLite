@@ -57,6 +57,8 @@ namespace DVRLite
         std::string ApplyTemplate(const std::string& templatename, const std::vector<std::string>& value) const;
         std::string ApplyTheme(const std::string&themeFilename, const std::string& styleFilename) const;
 
+        uintmax_t GetVideoDirectorySize();
+
         Json::Value templates;
 
     public:

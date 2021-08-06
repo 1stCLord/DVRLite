@@ -97,14 +97,8 @@ namespace DVRLite
         std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
         std::string free_space = "Free:" + bytes_to_string(std::filesystem::space(videoDirectory).available);
 
-        uintmax_t directory_size = 0;
-        for (const std::filesystem::directory_entry& directory_entry : std::filesystem::recursive_directory_iterator(videoDirectory))
-        {
-            if (std::filesystem::is_regular_file(directory_entry))
-                directory_size += directory_entry.file_size();
-        }
-        std::string used_space = "Used:" + bytes_to_string(directory_size);
-        std::string disc_space = (const char*)u8"💾" + free_space + "|" + used_space;
+        std::string used_space = "Used:" + bytes_to_string(dvrlite->GetVideoDirectorySize());
+        std::string disc_space = (const char*)u8"💾 " + free_space + " | " + used_space;
         return templates["headertop"].asString() + ApplyTemplate("headertitle", { pageTitle, disc_space, headerDropdown });
     }
 
