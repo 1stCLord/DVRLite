@@ -67,7 +67,8 @@ namespace DVRLite
 
 		JsonCache& GetCache();
 
-		uintmax_t GetVideoDirectorySize();
+		void UpdateVideoDirectorySize();
+		uintmax_t GetVideoDirectorySize() const;
 
 		Config& GetConfig();
 		const Config& GetConfig() const;
@@ -81,6 +82,5 @@ namespace DVRLite
 		JsonCache cache;
 
 		uintmax_t videoDirectorySize;
-		std::filesystem::file_time_type videoDirectoryWriteTime;
 	};
 }

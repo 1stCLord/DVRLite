@@ -35,6 +35,7 @@ namespace DVRLite
     {
         Logger::Init(config.GetLogPath());
         config.Load();
+        UpdateVideoDirectorySize();
 
         //load the sources
         if (std::filesystem::is_directory(config.GetSourcePath()))
@@ -88,22 +89,23 @@ namespace DVRLite
         return cache;
     }
 
-    uintmax_t DVRLite::GetVideoDirectorySize()
+    uintmax_t DVRLite::GetVideoDirectorySize() const
+    {
+        return videoDirectorySize;
+    }
+
+    void DVRLite::UpdateVideoDirectorySize()
     {
         std::filesystem::path videoDirectory = GetConfig().GetRecordPath();
-        std::filesystem::file_time_type newVideoDirectoryWriteTime = std::filesystem::last_write_time(videoDirectory);
-        if (newVideoDirectoryWriteTime > videoDirectoryWriteTime)
+
+        videoDirectorySize = 0;
+        for (const std::filesystem::directory_entry& directory_entry : std::filesystem::recursive_directory_iterator(videoDirectory))
         {
-            videoDirectoryWriteTime = newVideoDirectoryWriteTime;
-            videoDirectorySize = 0;
-            for (const std::filesystem::directory_entry& directory_entry : std::filesystem::recursive_directory_iterator(videoDirectory))
-            {
-                if (std::filesystem::is_regular_file(directory_entry))
-                    videoDirectorySize += directory_entry.file_size();
-            }
+            if (std::filesystem::is_regular_file(directory_entry))
+                videoDirectorySize += directory_entry.file_size();
         }
-        Log(LogFilter::DVRLite, "Video Directory Size: " + std::to_string(videoDirectorySize) + " Modified Time: " + std::to_string(videoDirectoryWriteTime.time_since_epoch().count()));
-        return videoDirectorySize;
+
+        Log(LogFilter::DVRLite, "Video Directory Size: " + std::to_string(videoDirectorySize));
     }
 
     DVRLite::Config& DVRLite::GetConfig()

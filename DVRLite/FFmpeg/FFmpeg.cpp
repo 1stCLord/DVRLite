@@ -231,6 +231,7 @@ namespace DVRLite
         }
         EndRecordThread(context);
         WriteMetadata(std::filesystem::path(path).replace_extension(".json"), startTime, actualEndTime);
+        dvrlite->UpdateVideoDirectorySize();
 
         return;
     }
