@@ -102,6 +102,7 @@ namespace DVRLite
                     videoDirectorySize += directory_entry.file_size();
             }
         }
+        Log(LogFilter::DVRLite, "Video Directory Size: " + std::to_string(videoDirectorySize) + " Modified Time: " + std::to_string(videoDirectoryWriteTime.time_since_epoch().count()));
         return videoDirectorySize;
     }
 

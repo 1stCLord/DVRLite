@@ -345,7 +345,7 @@ namespace DVRLite
         const std::vector<std::string> suffixes{ "B", "KB", "MB", "GB", "TB", "PB" };
 
         int magnitude = 0;
-        while (bytes > 1024 && magnitude < suffixes.size())
+        while (bytes > 1024 && magnitude < (suffixes.size()-1))
         {
             bytes /= 1024;
             ++magnitude;
