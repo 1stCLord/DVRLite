@@ -53,9 +53,13 @@ sudo make install
 Once the application is running, the web service will default to port 8000.
 You can access the web ui by pointing your browser at localhost:8000.
 From here you can access the Settings->Config menu in the top right which you can use to set the record path.
+
 ![alt text](https://github.com/TheSombreroKid/DVRLite/blob/master/config.png?raw=true)
+
 You can then add an onvif camera by selecting the Add button beside the settings dropdown.
+
 ![alt text](https://github.com/TheSombreroKid/DVRLite/blob/master/add.png?raw=true)
+
 This menu lets you configure a camera:
 * Name: give the camera a name.
 * Address: the onvif address of the camera, for a standard onvif camera the ip address should be all that's needed and the onvif address will be constructed from that, for non conforming cameras you may need to provide the full onvif address.
