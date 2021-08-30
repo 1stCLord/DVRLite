@@ -1,6 +1,6 @@
 # DVRLite
 A lightweight DVR for recording from IP Cameras when they send an onvif event. 
-This software is licensed for all non commercial use, what constitutes commerical use under this license is at the sole discretion of the license holder, me.
+This software is licensed for all non commercial use, what constitutes commercial use under this license is at the sole discretion of the licensor, me.
 
 A DVR loosly based on Zoneminder for recording from cameras that support onvif events. It is designed for maximum performance by offloading motion detection to the camera.
 This way it doesn't need to decode the video stream and writes it directly to disk, allowing it to easily manage many cameras at once or run on modest hardware.
