@@ -94,8 +94,11 @@ namespace DVRLite
         std::string restartString = ApplyTemplate("headerdropdownitem", { "Restart", "restart", (const char*)u8"♻️" });
 
         std::string headerDropdown = ApplyTemplate("headerdropdown", { addString, "Settings", configString + logString + shutdownString + (dvrlite->GetConfig().IsService() ? restartString : "") });
+
+        std::string free_space = "Free: N/A ";
         std::filesystem::path videoDirectory = dvrlite->GetConfig().GetRecordPath();
-        std::string free_space = "Free:" + bytes_to_string(std::filesystem::space(videoDirectory).available);
+        if(std::filesystem::is_directory(videoDirectory))
+            free_space = "Free:" + bytes_to_string(std::filesystem::space(videoDirectory).available);
 
         std::string used_space = "Used:" + bytes_to_string(dvrlite->GetVideoDirectorySize());
         std::string disc_space = (const char*)u8"💾 " + free_space + " | " + used_space;
